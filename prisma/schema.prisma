@@ -1,0 +1,60 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model Product {
+  id          String          @id @default(cuid())
+  name        String
+  description String
+  price       Float
+
+  category_id String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  colors      ProductColor[]
+  images      ProductImage[] // Default product images
+}
+
+model ProductColor {
+  id        String         @id @default(cuid())
+  color     String         // Example: "Red", "Blue", etc.
+  product   Product        @relation(fields: [productId], references: [id] ,onDelete: Cascade)
+  productId String
+
+  images    ProductImage[] // Images for the specific color
+  sizes     ProductVariant[]
+}
+
+model ProductVariant {
+  id         String         @id @default(cuid())
+  size       VariantsValues
+  stock      Int
+  color      ProductColor   @relation(fields: [colorId], references: [id],onDelete: Cascade)
+  colorId    String
+}
+
+model ProductImage {
+  id        String        @id @default(cuid())
+  imageUrl  String
+  product   Product?      @relation(fields: [productId], references: [id],onDelete: Cascade)
+  productId String?
+
+  color     ProductColor? @relation(fields: [colorId], references: [id],onDelete: Cascade)
+  colorId   String?
+}
+
+enum VariantsValues {
+  SIZE_5  // UK/India Size 5 (US Men 6, US Women 5, EU 38)
+  SIZE_6  // UK/India Size 6 (US Men 7, US Women 6, EU 39)
+  SIZE_7  // UK/India Size 7 (US Men 8, US Women 7, EU 40)
+  SIZE_8  // UK/India Size 8 (US Men 9, US Women 8, EU 41)
+  SIZE_9  // UK/India Size 9 (US Men 10, US Women 9, EU 42)
+  SIZE_10 // UK/India Size 10 (US Men 11, US Women 10, EU 43)
+  SIZE_11 // UK/India Size 11 (US Men 12, US Women 11, EU 44)
+  SIZE_12 // UK/India Size 12 (US Men 13, US Women 12, EU 47)
+}

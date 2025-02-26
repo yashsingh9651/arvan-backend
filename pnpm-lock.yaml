@@ -32,9 +32,6 @@ importers:
       morgan:
         specifier: ^1.10.0
         version: 1.10.0
-      webdrave-backend:
-        specifier: 'link:'
-        version: 'link:'
       zod:
         specifier: ^3.24.2
         version: 3.24.2
