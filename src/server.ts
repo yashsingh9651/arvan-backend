@@ -7,7 +7,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import 'express-async-errors';
 
 // import BaseRouter from '@src/routes';
-
+import { globalErrorHandler } from './middleware/globalerrorhandler.js';
 
 import ENV from './common/env.js';
 import HttpStatusCodes from './common/httpstatuscode.js';
@@ -39,20 +39,14 @@ if (ENV.NODE_ENV === NodeEnvs.Production) {
 }
 
 // Add APIs, must be after middleware
+
+import UserRouter from './routes/products.routes.js'
+
+app.use("/api/products", UserRouter);
 // app.use(Paths.Base, BaseRouter);
 
 // Add error handler
-app.use((err: Error, _: Request, res: Response, next: NextFunction) => {
-  if (ENV.NODE_ENV !== NodeEnvs.Test.valueOf()) {
-    console.log(err, true);
-  }
-  let status = HttpStatusCodes.INTERNAL_SERVER_ERROR;
-  if (err instanceof RouteError) {
-    status = err.status;
-    res.status(status).json({ error: err.message });
-  }
-  return next(err);
-});
+app.use(globalErrorHandler);
 
 
 // **** FrontEnd Content **** //
