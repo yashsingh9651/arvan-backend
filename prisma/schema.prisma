@@ -11,13 +11,13 @@ model Product {
   name        String
   description String
   price       Float
-
+material      String
   category_id String
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
   colors      ProductColor[]
-  images      ProductImage[] // Default product images
+  assets      ProductAsset[]// Default product images
 }
 
 model ProductColor {
@@ -26,7 +26,7 @@ model ProductColor {
   product   Product        @relation(fields: [productId], references: [id] ,onDelete: Cascade)
   productId String
 
-  images    ProductImage[] // Images for the specific color
+ assets    ProductAsset[] // Images for the specific color
   sizes     ProductVariant[]
 }
 
@@ -38,14 +38,20 @@ model ProductVariant {
   colorId    String
 }
 
-model ProductImage {
+model ProductAsset {
   id        String        @id @default(cuid())
-  imageUrl  String
+  asset_url  String
   product   Product?      @relation(fields: [productId], references: [id],onDelete: Cascade)
   productId String?
-
+  type     AssetType @default(IMAGE)
   color     ProductColor? @relation(fields: [colorId], references: [id],onDelete: Cascade)
   colorId   String?
+}
+
+
+enum AssetType {
+  IMAGE
+  VIDEO
 }
 
 enum VariantsValues {

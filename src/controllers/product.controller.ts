@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { AssetType, PrismaClient } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import HttpStatusCodes from "../common/httpstatuscode.js";
 import { RouteError, ValidationErr } from "../common/routeerror.js";
@@ -12,12 +12,13 @@ import {
 const prisma = new PrismaClient();
 
 /** ✅ Add a new product */
- const addProduct = async (req: Request, res: Response, next: NextFunction) => {
+const addProduct = async (req: Request, res: Response, next: NextFunction) => {
   const parsed = addProductSchema.safeParse(req.body);
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
   }
-  const { name, description, price, category_id, images } = parsed.data;
+  const { name, description, price, category_id, assets, material } =
+    parsed.data;
 
   const product = await prisma.product.create({
     data: {
@@ -25,21 +26,28 @@ const prisma = new PrismaClient();
       description,
       price,
       category_id,
-      images: { create: images?.map((img: string) => ({ imageUrl: img })) || [] },
+      material,
+      assets: {
+        create:
+          assets?.map((asset: { url: string; type: AssetType }) => ({
+            asset_url: asset.url,
+            type: asset.type,
+          })) || [],
+      },
     },
-    include: { images: true },
+    include: { assets: true },
   });
 
   res.status(HttpStatusCodes.CREATED).json({ success: true, product });
 };
 
 /** ✅ Add a color to an existing product */
- const addColor = async (req: Request, res: Response, next: NextFunction) => {
+const addColor = async (req: Request, res: Response, next: NextFunction) => {
   const parsed = addColorSchema.safeParse(req.body);
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
   }
-  const { productId, color, images } = parsed.data;
+  const { productId, color, assets } = parsed.data;
 
   const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product) {
@@ -50,23 +58,31 @@ const prisma = new PrismaClient();
     data: {
       color,
       productId,
-      images: { create: images?.map((img: string) => ({ imageUrl: img })) || [] },
+      assets: {
+        create:
+          assets?.map((asset: { url: string; type: AssetType }) => ({
+            asset_url: asset.url,
+            type: asset.type,
+          })) || [],
+      },
     },
-    include: { images: true },
+    include: { assets: true },
   });
 
   res.status(HttpStatusCodes.CREATED).json({ success: true, productColor });
 };
 
 /** ✅ Add sizes & stock to a color */
- const addSizes = async (req: Request, res: Response, next: NextFunction) => {
+const addSizes = async (req: Request, res: Response, next: NextFunction) => {
   const parsed = addSizesSchema.safeParse(req.body);
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
   }
   const { colorId, sizes } = parsed.data;
 
-  const color = await prisma.productColor.findUnique({ where: { id: colorId } });
+  const color = await prisma.productColor.findUnique({
+    where: { id: colorId },
+  });
   if (!color) {
     throw new RouteError(HttpStatusCodes.NOT_FOUND, "Color not found");
   }
@@ -83,7 +99,7 @@ const prisma = new PrismaClient();
 };
 
 /** ✅ Update stock for a specific size */
- const updateStock = async (req: Request, res: Response, next: NextFunction) => {
+const updateStock = async (req: Request, res: Response, next: NextFunction) => {
   const parsed = updateStockSchema.safeParse(req.body);
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
@@ -98,8 +114,99 @@ const prisma = new PrismaClient();
   res.status(HttpStatusCodes.OK).json({ success: true, updatedVariant });
 };
 
-/** ✅ Delete a product */
- const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
+/** ✅ Delete an asset */
+const deleteAsset = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  if (!id) {
+    throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing asset id");
+  }
+
+  const asset = await prisma.productAsset.findUnique({ where: { id } });
+  if (!asset) {
+    throw new RouteError(HttpStatusCodes.NOT_FOUND, "Asset not found");
+  }
+
+  await prisma.productAsset.delete({ where: { id } });
+  res
+    .status(HttpStatusCodes.OK)
+    .json({ success: true, message: "Asset deleted" });
+};
+
+/** ✅ Get a product with colors and variants */
+const getProduct = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  if (!id) {
+    throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing product id");
+  }
+
+  const product = await prisma.product.findUnique({
+    where: { id },
+    include: {
+      assets: true,
+      colors: {
+        include: {
+          assets: true,
+          sizes: true,
+        },
+      },
+    },
+  });
+
+  if (!product) {
+    throw new RouteError(HttpStatusCodes.NOT_FOUND, "Product not found");
+  }
+  res.status(HttpStatusCodes.OK).json({ success: true, product });
+};
+
+/** ✅ Get all products */
+const getAllProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const products = await prisma.product.findMany({
+    include: {
+      assets: true,
+    },
+  });
+  res.status(HttpStatusCodes.OK).json({ success: true, products });
+};
+
+const updateProduct = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { id } = req.params;
+  if (!id) {
+    throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing product id");
+  }
+
+  const parsed = addProductSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new ValidationErr(parsed.error.errors);
+  }
+
+  const product = await prisma.product.findUnique({ where: { id } });
+  if (!product) {
+    throw new RouteError(HttpStatusCodes.NOT_FOUND, "Product not found");
+  }
+
+  const updatedProduct = await prisma.product.update({
+    where: { id },
+    data: {
+      name: parsed.data.name,
+      description: parsed.data.description,
+      price: parsed.data.price,
+      material: parsed.data.material,
+    },
+  });
+
+  res.status(HttpStatusCodes.OK).json({ success: true, updatedProduct });
+};
+
+
+const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
   if (!id) {
     throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing product id");
@@ -146,100 +253,16 @@ const prisma = new PrismaClient();
   res.status(HttpStatusCodes.OK).json({ success: true, message: "Product variant deleted" });
 };
 
-/** ✅ Delete an image */
- const deleteImage = async (req: Request, res: Response, next: NextFunction) => {
-  const { id } = req.params;
-  if (!id) {
-    throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing image id");
-  }
-
-  const image = await prisma.productImage.findUnique({ where: { id } });
-  if (!image) {
-    throw new RouteError(HttpStatusCodes.NOT_FOUND, "Image not found");
-  }
-
-  await prisma.productImage.delete({ where: { id } });
-  res.status(HttpStatusCodes.OK).json({ success: true, message: "Image deleted" });
-};
-
-/** ✅ Update product details */
- const updateProduct = async (req: Request, res: Response, next: NextFunction) => {
-  const { id } = req.params;
-  if (!id) {
-    throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing product id");
-  }
-
-  const parsed = addProductSchema.safeParse(req.body);
-  if (!parsed.success) {
-    throw new ValidationErr(parsed.error.errors);
-  }
-
-  const product = await prisma.product.findUnique({ where: { id } });
-  if (!product) {
-    throw new RouteError(HttpStatusCodes.NOT_FOUND, "Product not found");
-  }
-
-  const updatedProduct = await prisma.product.update({
-    where: { id },
-    data: {
-      name: parsed.data.name,
-      description: parsed.data.description,
-      price: parsed.data.price,
-    },
-  });
-
-  res.status(HttpStatusCodes.OK).json({ success: true, updatedProduct });
-};
-
-const getProduct = async (req: Request, res: Response, next: NextFunction) => {
-  const { id } = req.params;
-  if (!id) {
-    throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing product id");
-  }
-
-  const product = await prisma.product.findUnique({
-    where: { id },
-    include: {
-      images: true,
-      colors: {
-        include: {
-          images: true,
-          sizes: true, // includes product variants
-        },
-      },
-    },
-  });
-  if (!product) {
-    throw new RouteError(HttpStatusCodes.NOT_FOUND, "Product not found");
-  }
-  res.status(HttpStatusCodes.OK).json({ success: true, product });
-  
-};
-
-const getAllProduct = async (req: Request, res: Response, next: NextFunction) => {
-  const products = await prisma.product.findMany({
-    include: {
-      images: true,
-    
-      },
-    })
-
-    res.status(HttpStatusCodes.OK).json({ success: true, products });
-  }
-
-/**
- * Default  of all functions for cleaner imports
- */
- export default {
+export default {
   addProduct,
   addColor,
   addSizes,
   updateStock,
+  deleteAsset,
+  getProduct,
+  getAllProduct,
+  updateProduct,
   deleteProduct,
   deleteColor,
-  deleteVariant,
-  deleteImage,
-  updateProduct,
-  getProduct,
-  getAllProduct
-} as const;
+  deleteVariant
+};
