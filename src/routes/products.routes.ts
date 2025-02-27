@@ -28,7 +28,7 @@ router.delete("/color/:id", productController.deleteColor);
 router.delete("/variant/:id", productController.deleteVariant);
 
 // Delete an image
-router.delete("/image/:id", productController.deleteImage);
+router.delete("/asset/:id", productController.deleteAsset);
 
 // Get product details by ID
 router.get("/:id", productController.getProduct);
