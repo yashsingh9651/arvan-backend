@@ -11,7 +11,9 @@ export const addProductSchema = z.object({
     .array(
       z.object({
         url: z.string().url("Invalid asset URL"),
-        type: z.nativeEnum(AssetType, { errorMap: () => ({ message: "Invalid asset type" }) }),
+        type: z.nativeEnum(AssetType, {
+          errorMap: () => ({ message: "Invalid asset type" }),
+        }),
       })
     )
     .optional(),
@@ -20,21 +22,31 @@ export const addProductSchema = z.object({
 export const addColorSchema = z.object({
   productId: z.string().uuid("Invalid product ID"),
   color: z.string().min(1, "Color is required"),
-  assets: z
-    .array(
-      z.object({
-        url: z.string().url("Invalid asset URL"),
-        type: z.nativeEnum(AssetType, { errorMap: () => ({ message: "Invalid asset type" }) }),
-      })
-    )
-    .optional(),
+  assets: z.array(
+    z.object({
+      url: z.string().url("Invalid asset URL"),
+      type: z.nativeEnum(AssetType, {
+        errorMap: () => ({ message: "Invalid asset type" }),
+      }),
+    })
+  ),
+  sizes: z.array(
+    z.object({
+      size: z.nativeEnum(VariantsValues, {
+        errorMap: () => ({ message: "Invalid size value" }),
+      }),
+      stock: z.number().int().min(0, "Stock must be a non-negative integer"),
+    })
+  ),
 });
 
 export const addSizesSchema = z.object({
   colorId: z.string().uuid("Invalid color ID"),
   sizes: z.array(
     z.object({
-      size: z.nativeEnum(VariantsValues, { errorMap: () => ({ message: "Invalid size value" }) }),
+      size: z.nativeEnum(VariantsValues, {
+        errorMap: () => ({ message: "Invalid size value" }),
+      }),
       stock: z.number().int().min(0, "Stock must be a non-negative integer"),
     })
   ),

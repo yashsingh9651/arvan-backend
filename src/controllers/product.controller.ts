@@ -1,4 +1,4 @@
-import { AssetType, PrismaClient } from "@prisma/client";
+import { AssetType, PrismaClient, VariantsValues } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import HttpStatusCodes from "../common/httpstatuscode.js";
 import { RouteError, ValidationErr } from "../common/routeerror.js";
@@ -34,6 +34,7 @@ const addProduct = async (req: Request, res: Response, next: NextFunction) => {
             type: asset.type,
           })) || [],
       },
+    
     },
     include: { assets: true },
   });
@@ -47,7 +48,7 @@ const addColor = async (req: Request, res: Response, next: NextFunction) => {
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
   }
-  const { productId, color, assets } = parsed.data;
+  const { productId, color, assets,sizes } = parsed.data;
 
   const product = await prisma.product.findUnique({ where: { id: productId } });
   if (!product) {
@@ -65,6 +66,13 @@ const addColor = async (req: Request, res: Response, next: NextFunction) => {
             type: asset.type,
           })) || [],
       },
+      sizes:{
+        create:
+        sizes?.map((asset: { size: VariantsValues; stock: number }) => ({
+          size: asset.size,
+          stock: asset.stock,
+        })) || [],
+      }
     },
     include: { assets: true },
   });
