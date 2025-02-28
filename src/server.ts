@@ -7,7 +7,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import 'express-async-errors';
 
 // import BaseRouter from '@src/routes';
-import { globalErrorHandler } from './middleware/globalerrorhandler.js';
+import { authenticateJWT, globalErrorHandler } from './middleware/globalerrorhandler.js';
 
 import ENV from './common/env.js';
 import HttpStatusCodes from './common/httpstatuscode.js';
@@ -47,6 +47,8 @@ app.use("/api/products", UserRouter);
 
 // Add error handler
 app.use(globalErrorHandler);
+app.use(authenticateJWT)
+
 
 
 // **** FrontEnd Content **** //
