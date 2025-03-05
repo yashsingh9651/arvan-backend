@@ -7,9 +7,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 // Define the expected environment variables and their types.
 const envSchema = z.object({
-    NODE_ENV: z.enum(Object.values(NodeEnvs) as [string, ...string[]]), 
+  NODE_ENV: z.enum(Object.values(NodeEnvs) as [string, ...string[]]), 
   PORT: z.coerce.number(),
   DATABASE_URL: z.string().url(),
+  CLOUDINARY_CLOUD_NAME: z.string(),
+  CLOUDINARY_API_KEY: z.coerce.number(),
+  CLOUDINARY_API_SECRET: z.string(),
 });
 
 
