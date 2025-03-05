@@ -13,6 +13,7 @@ import ENV from './common/env.js';
 import HttpStatusCodes from './common/httpstatuscode.js';
 import { RouteError } from './common/routeerror.js';
 import { NodeEnvs } from './common/constants.js';
+import cors from 'cors';
 
 
 /******************************************************************************
@@ -31,6 +32,7 @@ app.use(express.urlencoded({extended: true}));
 // Show routes called in console during development
 if (ENV.NODE_ENV === NodeEnvs.Dev) {
   app.use(morgan('dev'));
+  app.use(cors());
 }
 
 // Security
@@ -41,9 +43,12 @@ if (ENV.NODE_ENV === NodeEnvs.Production) {
 // Add APIs, must be after middleware
 
 import UserRouter from './routes/products.routes.js'
+import uploadRouter from './routes/upload.routes.js'
 
 app.use("/api/products", UserRouter);
 // app.use(Paths.Base, BaseRouter);
+
+app.use("/api/upload", uploadRouter);
 
 // Add error handler
 app.use(globalErrorHandler);
