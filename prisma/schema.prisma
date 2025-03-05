@@ -36,6 +36,10 @@ model ProductVariant {
   stock      Int
   color      ProductColor   @relation(fields: [colorId], references: [id],onDelete: Cascade)
   colorId    String
+
+  
+
+  OrderItem OrderItem[]
 }
 
 model ProductAsset {
@@ -79,6 +83,8 @@ model User {
  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  Order Order[]
 }
 enum UserType {
   ADMIN
@@ -105,7 +111,42 @@ model Account {
  
   @@id([provider, providerAccountId])
 }
- 
+
+model Order {
+  id          String          @id @default(cuid())
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  items       OrderItem[]     // Join table for order items
+  total       Float
+  status      OrderStatus
+  fulfillment OrderFulfillment
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model OrderItem {
+  id             String         @id @default(cuid())
+  order          Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId        String
+  productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  productVariantId String
+  quantity       Int
+  priceAtOrder   Float // Store price at the time of order
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderFulfillment {
+  PENDING     // Added for initial state
+  SHIPPED
+  DELIVERED
+  RETURNED
+}
 model Session {
   sessionToken String   @unique
   userId       String
