@@ -15,9 +15,9 @@ import { prisma } from "../utils/prismaclient.js";
 
 
 const addProduct = async (req: Request, res: Response, next: NextFunction) => {
-  if(!req.user && req?.user?.role !== "ADMIN"){
-    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  }
+  // if(!req.user && req?.user?.role !== "ADMIN"){
+  //   throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
+  // }
   const parsed = addProductSchema.safeParse(req.body);
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);

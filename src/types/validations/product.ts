@@ -5,7 +5,8 @@ export const addProductSchema = z.object({
   name: z.string().min(1, "Product name is required"),
   description: z.string().min(1, "Description is required"),
   price: z.number().positive("Price must be a positive number"),
-  category_id: z.string().uuid("Invalid category ID"),
+  discountPrice: z.number().positive("Discount price must be a positive number").optional(),
+  category_id: z.string().cuid("Invalid category ID"),
   material: z.string().min(1, "Material is required"),
   assets: z
     .array(

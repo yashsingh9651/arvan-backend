@@ -44,11 +44,14 @@ if (ENV.NODE_ENV === NodeEnvs.Production) {
 
 import UserRouter from './routes/products.routes.js'
 import uploadRouter from './routes/upload.routes.js'
+import categoryRouter from './routes/category.routes.js'
 
 app.use("/api/products", UserRouter);
 // app.use(Paths.Base, BaseRouter);
 
 app.use("/api/upload", uploadRouter);
+
+app.use("/api/category", categoryRouter);
 
 // Add error handler
 app.use(globalErrorHandler);
