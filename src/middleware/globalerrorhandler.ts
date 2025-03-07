@@ -83,17 +83,20 @@ export const authenticateJWT = async (
   next: NextFunction
 ): Promise<any> => {
   try {
-    const sessionToken = await req.cookies["authjs.session-token"];
-
+    console.log("Cookies:", req.cookies); // Log all cookies
+    const sessionToken = req.cookies["authjs.session-token"];
+    console.log("Received session token:", sessionToken);
     if (!sessionToken) {
       throw new RouteError(403, "Unauthorized: No token found");
     }
-    console.log(process.env.AUTH_SECRET);
+    console.log("AUTH_SECRET:", process.env.AUTH_SECRET);
     const decodedToken = await decode({
       token: sessionToken,
       secret: process.env.AUTH_SECRET!,
       salt: "authjs.session-token",
     });
+
+    console.log("Decoded token:", decodedToken);
 
     if (!decodedToken) {
       throw new RouteError(403, "Unauthorized: Invalid token");

@@ -1,5 +1,5 @@
 import morgan from 'morgan';
-
+import cookieParser from "cookie-parser";
 import helmet from 'helmet';
 import express, { Request, Response, NextFunction } from 'express';
 
@@ -24,6 +24,7 @@ const app = express();
 
 
 // **** Middleware **** //
+app.use(cookieParser());
 
 // Basic middleware
 app.use(express.json());
@@ -44,11 +45,14 @@ if (ENV.NODE_ENV === NodeEnvs.Production) {
 
 import UserRouter from './routes/products.routes.js'
 import uploadRouter from './routes/upload.routes.js'
+import paymentRouter from './routes/payment.routes.js';
 
 app.use("/api/products", UserRouter);
 // app.use(Paths.Base, BaseRouter);
 
 app.use("/api/upload", uploadRouter);
+
+app.use('/api/payment', paymentRouter);
 
 // Add error handler
 app.use(globalErrorHandler);
