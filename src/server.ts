@@ -32,7 +32,6 @@ app.use(express.urlencoded({extended: true}));
 // Show routes called in console during development
 if (ENV.NODE_ENV === NodeEnvs.Dev) {
   app.use(morgan('dev'));
-  app.use(cors());
 }
 
 // Security
@@ -40,6 +39,19 @@ if (ENV.NODE_ENV === NodeEnvs.Production) {
   app.use(helmet());
 }
 
+//CORS
+const whitelist = [ENV.FRONTENDURL];
+const corsOptions = {
+  origin: function (origin: any, callback: Function) {
+    if (!origin || whitelist.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
+
+app.use(cors(corsOptions));
 // Add APIs, must be after middleware
 
 import UserRouter from './routes/products.routes.js'
