@@ -11,13 +11,14 @@ model Product {
   name        String
   description String
   price       Float
-material      String
+  discountPrice Float?
+  material      String
   category_id String
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
-
+  status      ProductStatus   @default(DRAFT)
   colors      ProductColor[]
-  assets      ProductAsset[]// Default product images
+  assets      ProductAsset[]
 }
 
 model ProductColor {
@@ -26,7 +27,7 @@ model ProductColor {
   product   Product        @relation(fields: [productId], references: [id] ,onDelete: Cascade)
   productId String
 
- assets    ProductAsset[] // Images for the specific color
+  assets    ProductAsset[] // Images for the specific color
   sizes     ProductVariant[]
 }
 
@@ -36,8 +37,6 @@ model ProductVariant {
   stock      Int
   color      ProductColor   @relation(fields: [colorId], references: [id],onDelete: Cascade)
   colorId    String
-
-  
 
   OrderItem OrderItem[]
 }
@@ -52,7 +51,19 @@ model ProductAsset {
   colorId   String?
 }
 
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  productCount Int @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
 
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+}
 enum AssetType {
   IMAGE
   VIDEO
@@ -80,7 +91,6 @@ model User {
   password      String?
   role          UserType
 
- 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -164,4 +174,3 @@ model VerificationToken {
  
   @@id([identifier, token])
 }
- 

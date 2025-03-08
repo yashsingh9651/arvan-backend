@@ -1,4 +1,4 @@
-import { AssetType, PrismaClient, VariantsValues } from "@prisma/client";
+import { AssetType, VariantsValues } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import HttpStatusCodes from "../common/httpstatuscode.js";
 import { RouteError, ValidationErr } from "../common/routeerror.js";
@@ -15,9 +15,9 @@ import { prisma } from "../utils/prismaclient.js";
 
 
 const addProduct = async (req: Request, res: Response, next: NextFunction) => {
-  if(!req.user && req?.user?.role !== "ADMIN"){
-    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  }
+  // if(!req.user && req?.user?.role !== "ADMIN"){
+  //   throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
+  // }
   const parsed = addProductSchema.safeParse(req.body);
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
@@ -49,9 +49,9 @@ const addProduct = async (req: Request, res: Response, next: NextFunction) => {
 
 /** ✅ Add a color to an existing product */
 const addColor = async (req: Request, res: Response, next: NextFunction) => {
-  if(!req.user && req?.user?.role !== "ADMIN"){
-    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  }
+  // if(!req.user && req?.user?.role !== "ADMIN"){
+  //   throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
+  // }
   const parsed = addColorSchema.safeParse(req.body);
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
@@ -159,9 +159,9 @@ const deleteAsset = async (req: Request, res: Response, next: NextFunction) => {
 
 /** ✅ Get a product with colors and variants */
 const getProduct = async (req: Request, res: Response, next: NextFunction) => {
-  if(!req.user && req?.user?.role !== "ADMIN"){
-    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  }
+  // if(!req.user && req?.user?.role !== "ADMIN"){
+  //   throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
+  // }
   const { id } = req.params;
   if (!id) {
     throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing product id");
@@ -205,9 +205,9 @@ const updateProduct = async (
   res: Response,
   next: NextFunction
 ) => {
-  if(!req.user && req?.user?.role !== "ADMIN"){
-    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  }
+  // if(!req.user && req?.user?.role !== "ADMIN"){
+  //   throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
+  // }
   const { id } = req.params;
 
   if (!id) {
@@ -237,11 +237,31 @@ const updateProduct = async (
   res.status(HttpStatusCodes.OK).json({ success: true, updatedProduct });
 };
 
+const updateStatus = async (req: Request, res: Response, next: NextFunction) => {
+  // if(!req.user && req?.user?.role !== "ADMIN"){
+  //   throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
+  // }
+  const { id } = req.params; 
+  const { status } = req.body;
+  if (!id) {
+    throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing product id");
+  }
+  const product = await prisma.product.findUnique({ where: { id } });
+  if (!product) {
+    throw new RouteError(HttpStatusCodes.NOT_FOUND, "Product not found");
+  }
+  await prisma.product.update({
+    where: { id },
+    data: { status },
+  });
+  res.status(HttpStatusCodes.OK).json({ success: true, message: "Product status updated" });
+};
+
 
 const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
-  if(!req.user && req?.user?.role !== "ADMIN"){
-    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  }
+  // if(!req.user && req?.user?.role !== "ADMIN"){
+  //   throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
+  // }
   const { id } = req.params;
   if (!id) {
     throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing product id");
@@ -303,6 +323,7 @@ export default {
   getProduct,
   getAllProduct,
   updateProduct,
+  updateStatus,
   deleteProduct,
   deleteColor,
   deleteVariant
