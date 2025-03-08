@@ -15,6 +15,9 @@ router.post("/sizes", productController.addSizes);
 // Update stock for a specific product variant (size)
 router.put("/stock", productController.updateStock);
 
+// Update product status
+router.put("/status/:id", productController.updateStatus);
+
 // Update product details
 router.put("/:id", productController.updateProduct);
 
