@@ -51,7 +51,7 @@ const signin = async (req: Request, res: Response, next: NextFunction) => {
 
     const token = await generateJWT({ ...user });
 
-    res.status(HttpStatusCodes.OK).json({ token });
+    res.status(HttpStatusCodes.OK).json({id:user.id, mobile: user.mobile, token });
 };
 
 const signup = async (req: Request, res: Response, next: NextFunction) => {
