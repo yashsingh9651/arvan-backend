@@ -14,6 +14,9 @@ importers:
       '@types/multer':
         specifier: ^1.4.12
         version: 1.4.12
+      bcryptjs:
+        specifier: ^3.0.2
+        version: 3.0.2
       cloudinary:
         specifier: ^2.5.1
         version: 2.5.1
@@ -35,6 +38,9 @@ importers:
       helmet:
         specifier: ^8.0.0
         version: 8.0.0
+      jose:
+        specifier: ^6.0.8
+        version: 6.0.8
       morgan:
         specifier: ^1.10.0
         version: 1.10.0
@@ -525,6 +531,10 @@ packages:
     resolution: {integrity: sha512-NF+epuEdnUYVlGuhaxbbq+dvJttwLnGY+YixlXlME5KpQ5W3CnXA5cVTneY3SPbPDRkcjMbifrwmFYcClgOZeg==}
     engines: {node: '>= 0.8'}
 
+  bcryptjs@3.0.2:
+    resolution: {integrity: sha512-k38b3XOZKv60C4E2hVsXTolJWfkGRMbILBIe2IBITXciy5bOsTKot5kDrf3ZfufQtQOUN5mXceUEpU1rTl9Uog==}
+    hasBin: true
+
   binary-extensions@2.3.0:
     resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
@@ -810,6 +820,9 @@ packages:
 
   jose@4.15.9:
     resolution: {integrity: sha512-1vUQX+IdDMVPj4k8kOxgUqlcK518yluMuGZwqlr44FS1ppZB/5GWh4rZG89erpOBOJjU/OBsnCVFfapsRz6nEA==}
+
+  jose@6.0.8:
+    resolution: {integrity: sha512-EyUPtOKyTYq+iMOszO42eobQllaIjJnwkZ2U93aJzNyPibCy7CEvT9UQnaCVB51IAd49gbNdCew1c0LcLTCB2g==}
 
   lodash@4.17.21:
     resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
@@ -1546,6 +1559,8 @@ snapshots:
     dependencies:
       safe-buffer: 5.1.2
 
+  bcryptjs@3.0.2: {}
+
   binary-extensions@2.3.0: {}
 
   body-parser@1.20.3:
@@ -1878,6 +1893,8 @@ snapshots:
   isarray@1.0.0: {}
 
   jose@4.15.9: {}
+
+  jose@6.0.8: {}
 
   lodash@4.17.21: {}
 
