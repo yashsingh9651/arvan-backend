@@ -14,6 +14,7 @@ import HttpStatusCodes from './common/httpstatuscode.js';
 import { RouteError } from './common/routeerror.js';
 import { NodeEnvs } from './common/constants.js';
 import cors from 'cors';
+import cookieParser from 'cookie-parser'
 
 
 /******************************************************************************
@@ -28,6 +29,7 @@ const app = express();
 // Basic middleware
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use(cookieParser());
 
 // Show routes called in console during development
 if (ENV.NODE_ENV === NodeEnvs.Dev) {
@@ -42,13 +44,10 @@ if (ENV.NODE_ENV === NodeEnvs.Production) {
 //CORS
 const whitelist = [ENV.FRONTENDURL];
 const corsOptions = {
-  origin: function (origin: any, callback: Function) {
-    if (!origin || whitelist.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: ENV.FRONTENDURL,  // Only allow your frontend URL
+  credentials: true,         // Allow credentials (cookies, authorization headers, etc.)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 };
 
 app.use(cors(corsOptions));
@@ -73,7 +72,7 @@ app.use("/api/orders",orderRoutes);
 
 // Add error handler
 app.use(globalErrorHandler);
-app.use(authenticateJWT)
+// app.use(authenticateJWT)
 
 
 
@@ -89,3 +88,5 @@ app.use(authenticateJWT)
 ******************************************************************************/
 
 export default app;
+
+

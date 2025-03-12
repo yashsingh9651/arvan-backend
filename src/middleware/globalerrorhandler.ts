@@ -8,6 +8,7 @@ import { exceptionCodes } from "../common/prismafilter.js";
 import { decode } from "next-auth/jwt";
 import { prisma } from "../utils/prismaclient.js";
 
+
 const cleanMessage = (message: string) => message.replace(/(\r\n|\r|\n)/g, " ");
 export const globalErrorHandler = (
   err: Error,
@@ -84,14 +85,16 @@ export const authenticateJWT = async (
 ): Promise<any> => {
   try {
     const sessionToken = await req.cookies["authjs.session-token"];
-
+    
+    console.log(sessionToken);
+    
     if (!sessionToken) {
       throw new RouteError(403, "Unauthorized: No token found");
     }
-    console.log(process.env.AUTH_SECRET);
+    
     const decodedToken = await decode({
       token: sessionToken,
-      secret: process.env.AUTH_SECRET!,
+      secret: "wVNOyhJqewai+0p4+MLNM0VhwKrC4YOZew6H1i7r87E=",
       salt: "authjs.session-token",
     });
 
@@ -106,6 +109,7 @@ export const authenticateJWT = async (
       where: { id: decodedToken.id as string },
     });
 
+    console.log(user)
     if (!user) {
       throw new RouteError(403, "Unauthorized: User not found");
     }

@@ -83,13 +83,14 @@ enum VariantsValues {
 model User {
   id            String          @id @default(cuid())
   name          String?
-  email         String          @unique
-  emailVerified DateTime?
+  mobile_no     String        @unique
+   isPhoneNoVerified Boolean @default(false)
+    phoneNoVerified DateTime?
   image         String?
   accounts      Account[]
   sessions      Session[]
   password      String?
-  role          UserType
+  role          UserType @default(USER)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
