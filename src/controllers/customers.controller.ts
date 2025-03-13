@@ -15,12 +15,15 @@ const allCustomers = async (req: Request, res: Response, next: NextFunction) => 
         select: {
           id: true,
           name: true,
-          email: true,
+          mobile_no:true,
+         
           Order: {
             select: {
               id: true,
               total: true,
               createdAt: true,
+              
+              
             },
             orderBy: {
               createdAt: "desc",
@@ -37,7 +40,7 @@ const allCustomers = async (req: Request, res: Response, next: NextFunction) => 
         return {
           id: customer.id,
           name: customer.name || "N/A",
-          email: customer.email,
+         mobile_no: customer.mobile_no,
           totalOrders,
           totalSpent,
           lastOrder,
