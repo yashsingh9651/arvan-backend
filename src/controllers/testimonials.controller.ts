@@ -60,7 +60,7 @@ interface TestimonialInput {
     } catch (error) {
       console.error("Error fetching testimonials:", error);
       res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: "Internal Server Error",
+        message: "Internal Error",
         error: error instanceof Error ? error.message : "Unknown error",
       });
     }
