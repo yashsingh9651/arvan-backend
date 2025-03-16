@@ -6,102 +6,123 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 model Product {
-  id          String          @id @default(cuid())
-  name        String
-  description String
-  price       Float
+  id            String         @id @default(cuid())
+  name          String
+  description   String
+  price         Float
   discountPrice Float?
   material      String
-  category_id String
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  status      ProductStatus   @default(DRAFT)
-  colors      ProductColor[]
-  assets      ProductAsset[]
+  category_id   String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  status        ProductStatus  @default(DRAFT)
+  colors        ProductColor[]
+  assets        ProductAsset[]
 }
 
 model ProductColor {
-  id        String         @id @default(cuid())
-  color     String         // Example: "Red", "Blue", etc.
-  product   Product        @relation(fields: [productId], references: [id] ,onDelete: Cascade)
+  id        String  @id @default(cuid())
+  color     String // Example: "Red", "Blue", etc.
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String
 
-  assets    ProductAsset[] // Images for the specific color
-  sizes     ProductVariant[]
+  assets ProductAsset[] // Images for the specific color
+  sizes  ProductVariant[]
 }
 
 model ProductVariant {
-  id         String         @id @default(cuid())
-  size       VariantsValues
-  stock      Int
-  color      ProductColor   @relation(fields: [colorId], references: [id],onDelete: Cascade)
-  colorId    String
+  id      String         @id @default(cuid())
+  size    VariantsValues
+  stock   Int
+  color   ProductColor   @relation(fields: [colorId], references: [id], onDelete: Cascade)
+  colorId String
 
   OrderItem OrderItem[]
 }
 
 model ProductAsset {
   id        String        @id @default(cuid())
-  asset_url  String
-  product   Product?      @relation(fields: [productId], references: [id],onDelete: Cascade)
+  asset_url String
+  product   Product?      @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String?
-  type     AssetType @default(IMAGE)
-  color     ProductColor? @relation(fields: [colorId], references: [id],onDelete: Cascade)
+  type      AssetType     @default(IMAGE)
+  color     ProductColor? @relation(fields: [colorId], references: [id], onDelete: Cascade)
   colorId   String?
 }
 
 model Category {
-  id          String    @id @default(cuid())
-  name        String
-  description String?
-  productCount Int @default(0)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  description  String?
+  productCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 enum ProductStatus {
   DRAFT
   PUBLISHED
 }
+
 enum AssetType {
   IMAGE
   VIDEO
 }
 
 enum VariantsValues {
-  SIZE_5  // UK/India Size 5 (US Men 6, US Women 5, EU 38)
-  SIZE_6  // UK/India Size 6 (US Men 7, US Women 6, EU 39)
-  SIZE_7  // UK/India Size 7 (US Men 8, US Women 7, EU 40)
-  SIZE_8  // UK/India Size 8 (US Men 9, US Women 8, EU 41)
-  SIZE_9  // UK/India Size 9 (US Men 10, US Women 9, EU 42)
+  SIZE_5 // UK/India Size 5 (US Men 6, US Women 5, EU 38)
+  SIZE_6 // UK/India Size 6 (US Men 7, US Women 6, EU 39)
+  SIZE_7 // UK/India Size 7 (US Men 8, US Women 7, EU 40)
+  SIZE_8 // UK/India Size 8 (US Men 9, US Women 8, EU 41)
+  SIZE_9 // UK/India Size 9 (US Men 10, US Women 9, EU 42)
   SIZE_10 // UK/India Size 10 (US Men 11, US Women 10, EU 43)
   SIZE_11 // UK/India Size 11 (US Men 12, US Women 11, EU 44)
   SIZE_12 // UK/India Size 12 (US Men 13, US Women 12, EU 47)
 }
 
 model User {
-  id            String          @id @default(cuid())
-  name          String?
-  mobile_no     String        @unique
-   isPhoneNoVerified Boolean @default(false)
-    phoneNoVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  password      String?
-  role          UserType @default(USER)
+  id                String    @id @default(cuid())
+  name              String?
+  mobile_no         String    @unique
+  isPhoneNoVerified Boolean   @default(false)
+  phoneNoVerified   DateTime?
+  image             String?
+  accounts          Account[]
+  sessions          Session[]
+  password          String?
+  role              UserType  @default(USER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Order Order[]
+
+  Address Address[]
+}
+
+model Address {
+  id      String @id @default(uuid())
+  street  String
+  city    String
+  state   String
+  country String
+  zipCode String
+  userId  String // Foreign key to User
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   Order Order[]
 }
+
 enum UserType {
   ADMIN
   USER
 }
- 
+
 model Account {
   userId            String
   type              String
@@ -114,36 +135,38 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@id([provider, providerAccountId])
 }
 
 model Order {
-  id          String          @id @default(cuid())
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String           @id @default(cuid())
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      String
-  items       OrderItem[]     // Join table for order items
+  items       OrderItem[] // Join table for order items
   total       Float
   status      OrderStatus
   fulfillment OrderFulfillment
+  addressId   String
+  address     Address         @relation(fields: [addressId], references: [id])
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model OrderItem {
-  id             String         @id @default(cuid())
-  order          Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId        String
-  productVariant ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  id               String         @id @default(cuid())
+  order            Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId          String
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
   productVariantId String
-  quantity       Int
-  priceAtOrder   Float // Store price at the time of order
+  quantity         Int
+  priceAtOrder     Float // Store price at the time of order
 }
 
 enum OrderStatus {
@@ -153,25 +176,26 @@ enum OrderStatus {
 }
 
 enum OrderFulfillment {
-  PENDING     // Added for initial state
+  PENDING // Added for initial state
   SHIPPED
   DELIVERED
   RETURNED
 }
+
 model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
- 
+
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
+
   @@id([identifier, token])
 }

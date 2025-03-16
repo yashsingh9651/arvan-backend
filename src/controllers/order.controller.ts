@@ -20,12 +20,13 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
     throw new ValidationErr(parsed.error.errors);
   }
 
-  const { userId, items, total } = parsed.data;
+  const { userId, items, total,addressId } = parsed.data;
 
   const order = await prisma.order.create({
     data: {
       userId,
       total,
+      addressId,
       status: OrderStatus.PENDING,
       fulfillment: OrderFulfillment.PENDING,
       items: {
