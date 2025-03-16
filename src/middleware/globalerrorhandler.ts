@@ -98,7 +98,7 @@ export const authenticateJWT = async (
     
     const decodedToken = await decode({
       token: sessionToken,
-      secret: "wVNOyhJqewai+0p4+MLNM0VhwKrC4YOZew6H1i7r87E=",
+      secret: ENV.AUTH_SECRET,
       salt: "authjs.session-token",
     });
 
@@ -125,4 +125,12 @@ export const authenticateJWT = async (
     console.error("Failed to authenticate", error);
     throw new RouteError(403, "Unauthorized: Invalid token");
   }
+};
+
+
+export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (req.user.role === "USER") {
+    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
+  }
+  next();
 };

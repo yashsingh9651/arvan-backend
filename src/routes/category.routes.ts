@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import categoryController from "../controllers/category.controller.js";
-import { authenticateJWT } from '../middleware/globalerrorhandler.js';
+import { authenticateJWT,isAdmin } from '../middleware/globalerrorhandler.js';
 
 const router = Router();
 
-router.get("/",authenticateJWT ,categoryController.getAllCategories);
+router.get("/",authenticateJWT,isAdmin,categoryController.getAllCategories);
 
-router.post("/", authenticateJWT ,categoryController.addCategory);
+router.post("/", authenticateJWT,categoryController.addCategory);
 
 router.get("/:id", categoryController.getCategory);
 
