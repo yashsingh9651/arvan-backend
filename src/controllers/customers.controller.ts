@@ -35,7 +35,7 @@ const allCustomers = async (req: Request, res: Response, next: NextFunction) => 
         },
       });
   
-      const formattedCustomers = customers.map((customer) => {
+      const formattedCustomers = customers.map((customer: { Order: any[]; id: any; name: any; mobile_no: any; }) => {
         const totalOrders = customer.Order.length;
         const totalSpent = customer.Order.reduce((sum, order) => sum + order.total, 0);
         const lastOrder = customer.Order[0]?.createdAt || null;
