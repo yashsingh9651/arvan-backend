@@ -1,4 +1,3 @@
-import { PrismaClient } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import HttpStatusCodes from "../common/httpstatuscode.js";
 import { RouteError, ValidationErr } from "../common/routeerror.js";

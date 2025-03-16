@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client';
 import { Request, Response, NextFunction } from 'express';
 import HttpStatusCodes from './httpstatuscode.js';
 
