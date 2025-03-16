@@ -58,6 +58,7 @@ import uploadRouter from './routes/upload.routes.js'
 import categoryRouter from './routes/category.routes.js'
 import customersRoutes from './routes/customers.routes.js'
 import orderRoutes from './routes/order.routes.js'
+import testimonialsRoutes from './routes/testimonials.routes.js'
 
 app.use("/api/products", UserRouter);
 // app.use(Paths.Base, BaseRouter);
@@ -69,6 +70,10 @@ app.use("/api/category", categoryRouter);
 app.use("/api/customers",customersRoutes);
 
 app.use("/api/orders",orderRoutes);
+
+// app.use("/api/testimonials",testimonialsRoutes);
+
+app.use("/api/testimonials",testimonialsRoutes);
 
 // Add error handler
 app.use(globalErrorHandler);
