@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { prisma } from "../utils/prismaclient.js";
 import HttpStatusCodes from "../common/httpstatuscode.js";
 
-const createTestimonial = async (req: Request, res: Response, next: NextFunction): Promise<void>  => {
+const createreview = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
         // Validate user object
         // if (!req.user) {
@@ -10,28 +10,30 @@ const createTestimonial = async (req: Request, res: Response, next: NextFunction
         //     return;
         // }
 
-        const { title, description, rating, productId } = req.body;
+        const { title, description, rating } = req.body;
+        const productIdFromParams = req.params.productId;  
+        console.log("productIdFromParams", productIdFromParams);
 
         // Validate required fields
-        if (!title || !description || !rating || !productId) {
+        if (!title || !description || !rating || !productIdFromParams) {
             res.status(HttpStatusCodes.BAD_REQUEST).json({ message: "Missing required fields" });
-            return 
+            return;
         }
 
         // Ensure rating is a valid number (1-5)
         if (typeof rating !== "number" || rating < 1 || rating > 5) {
-             res.status(HttpStatusCodes.BAD_REQUEST).json({ message: "Rating must be a number between 1 and 5" });
-             return;
+            res.status(HttpStatusCodes.BAD_REQUEST).json({ message: "Rating must be a number between 1 and 5" });
+            return;
         }
 
-        // Ensure product exists before creating the testimonial
+        // Ensure product exists before creating the product rating
         const productExists = await prisma.product.findUnique({
-            where: { id: productId }
+            where: { id: productIdFromParams }
         });
 
         if (!productExists) {
-             res.status(HttpStatusCodes.NOT_FOUND).json({ message: "Product not found" });
-             return
+            res.status(HttpStatusCodes.NOT_FOUND).json({ message: "Product not found" });
+            return;
         }
 
         // Create testimonial
@@ -40,55 +42,77 @@ const createTestimonial = async (req: Request, res: Response, next: NextFunction
                 title,
                 description,
                 rating,
-                productId,
-                userId: req.user.id  // Associate testimonial with the user
+                productId: productIdFromParams,
+                // userId: req.user.id 
             }
         });
 
-         res.status(HttpStatusCodes.CREATED).json({
+        res.status(HttpStatusCodes.CREATED).json({
             message: "Testimonial created successfully",
             productrating
         });
 
-
-
     } catch (error) {
         console.error("Error creating testimonial:", error);
-         res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).json({
+        res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).json({
             message: "Internal Server Error",
             error: error instanceof Error ? error.message : "Unknown error"
         });
-
     }
 };
 
 
-const getTestimonialsByProductId = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+
+// const getTestimonialsByProductId = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+//     try {
+//         const { productId } = req.query; // URL se productId le rahe hain
+
+//         const testimonials = await prisma.productRating.findMany({
+//             where: {
+//                 productId: productId ? String(productId) : undefined,
+//             },
+//             orderBy: {
+//                 createdAt: "desc"
+//             }
+//         });
+
+//         res.status(200).json({
+//             testimonials
+//         });
+
+//     } catch (error) {
+//         console.error("Error getting testimonials:", error);
+//         res.status(500).json({
+//             message: "Internal Server Error",
+//             error: error instanceof Error ? error.message : "Unknown error"
+//         });
+//     }
+// };
+const getReviewsByProductId = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-        const { productId } = req.query; // URL se productId le rahe hain
+        const productId = req.params.productId;  
 
-        const testimonials = await prisma.productRating.findMany({
-            where: productId ? { productId: String(productId) } : undefined, // Filter lagaya
-            orderBy: {
-                createdAt: "desc"
-            }
+        if (!productId) {
+            res.status(400).json({ message: "Product ID is required" });
+            return;
+        }
+
+        const reviews = await prisma.productRating.findMany({
+            where: { productId: productId },  // Sirf usi product ke reviews lao
+            orderBy: { createdAt: "desc" }
         });
+        
 
-         res.status(HttpStatusCodes.OK).json({
-            testimonials
-        });
-
+        res.status(200).json({ reviews });
 
     } catch (error) {
-        console.error("Error getting testimonials:", error);
-         res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).json({
-            message: "Internal Server Error",
-            error: error instanceof Error ? error.message : "Unknown error"
-        });
+        console.error("Error getting reviews:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error instanceof Error ? error.message : "Unknown error" });
     }
 };
 
+
 export default {
-    createTestimonial,
-    getTestimonialsByProductId
+    createreview,
+    getReviewsByProductId
 };
