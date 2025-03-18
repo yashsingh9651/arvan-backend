@@ -193,13 +193,53 @@ const getAllProduct = async (
   res: Response,
   next: NextFunction
 ) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const search = (req.query.search as string) || '';
+  
+  const skip = (page - 1) * limit;
+  
+  // Get total count for pagination
+  const totalCount = await prisma.product.count({
+    where: {
+      OR: [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
+      ]
+    }
+  });
+  
+  const totalPages = Math.ceil(totalCount / limit);
+  
   const products = await prisma.product.findMany({
+    where: {
+      OR: [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
+      ]
+    },
     include: {
       assets: true,
     },
+    skip,
+    take: limit,
   });
-  res.status(HttpStatusCodes.OK).json({ success: true, products });
+  
+  res.status(HttpStatusCodes.OK).json({ 
+    success: true, 
+    products,
+    pagination: {
+      totalPages,
+      currentPage: page,
+      totalItems: totalCount,
+      itemsPerPage: limit
+    }
+  });
 };
+
+
+
+
 
 const updateProduct = async (
   req: Request,
