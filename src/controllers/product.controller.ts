@@ -23,7 +23,7 @@ const addProduct = async (req: Request, res: Response, next: NextFunction) => {
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
   }
-  const { name, description, price, category_id, assets, material } =
+  const { name, description, price,discountPrice, category_id, assets, material, status } =
     parsed.data;
 
   const product = await prisma.product.create({
@@ -31,8 +31,10 @@ const addProduct = async (req: Request, res: Response, next: NextFunction) => {
       name,
       description,
       price,
+      discountPrice: discountPrice || null,
       category_id,
       material,
+      status,
       assets: {
         create:
           assets?.map((asset: { url: string; type: AssetType }) => ({
@@ -116,6 +118,51 @@ const addSizes = async (req: Request, res: Response, next: NextFunction) => {
   });
 
   res.status(HttpStatusCodes.CREATED).json({ success: true, variants });
+};
+
+/** ✅ Update a color */
+const updateColor = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const parsed = addColorSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new ValidationErr(parsed.error.errors);
+  }
+  const { color, assets, sizes } = parsed.data;
+
+  // First, delete all existing assets and sizes for this color
+  await prisma.$transaction([
+    prisma.productAsset.deleteMany({
+      where: { colorId: id }
+    }),
+    prisma.productVariant.deleteMany({
+      where: { colorId: id }
+    })
+  ]);
+
+  // Then update the color with new assets and sizes
+  const productColor = await prisma.productColor.update({
+    where: { id },
+    data: {
+      color,
+      assets: {
+        create:
+          assets?.map((asset: { url: string; type: AssetType }) => ({
+            asset_url: asset.url,
+            type: asset.type,
+          })) || [],
+      },
+      sizes: {
+        create:
+          sizes?.map((asset: { size: VariantsValues; stock: number }) => ({
+            size: asset.size,
+            stock: asset.stock,
+          })) || [],
+      }
+    },
+    include: { assets: true, sizes: true },
+  });
+
+  res.status(HttpStatusCodes.OK).json({ success: true, productColor });
 };
 
 /** ✅ Update stock for a specific size */
@@ -246,9 +293,6 @@ const updateProduct = async (
   res: Response,
   next: NextFunction
 ) => {
-  // if(!req.user && req?.user?.role !== "ADMIN"){
-  //   throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  // }
   const { id } = req.params;
 
   if (!id) {
@@ -265,14 +309,39 @@ const updateProduct = async (
     throw new RouteError(HttpStatusCodes.NOT_FOUND, "Product not found");
   }
 
+  const { name, description, price, discountPrice, category_id, material, assets, status } = parsed.data;
+
+  // First, delete existing assets if new ones are provided
+  if (assets && assets.length > 0) {
+    await prisma.productAsset.deleteMany({
+      where: { 
+        productId: id,
+        colorId: null 
+      }
+    });
+  }
+
+  // Update the product with all fields
   const updatedProduct = await prisma.product.update({
     where: { id },
     data: {
-      name: parsed.data.name,
-      description: parsed.data.description,
-      price: parsed.data.price,
-      material: parsed.data.material,
+      name,
+      description,
+      price,
+      discountPrice,
+      category_id,
+      material,
+      status,
+      assets: assets ? {
+        create: assets.map((asset: { url: string; type: AssetType }) => ({
+          asset_url: asset.url,
+          type: asset.type,
+        }))
+      } : undefined
     },
+    include: {
+      assets: true
+    }
   });
 
   res.status(HttpStatusCodes.OK).json({ success: true, updatedProduct });
@@ -360,6 +429,7 @@ export default {
   addColor,
   addSizes,
   updateStock,
+  updateColor,
   deleteAsset,
   getProduct,
   getAllProduct,

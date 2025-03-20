@@ -9,6 +9,9 @@ router.post("/", productController.addProduct);
 // Add a color to an existing product
 router.post("/color", productController.addColor);
 
+// Update a color
+router.put("/color/:id", productController.updateColor);
+
 // Add sizes & stock to a product color
 router.post("/sizes", productController.addSizes);
 

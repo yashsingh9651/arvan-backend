@@ -14,8 +14,4 @@ router.post("/customer/address", customersController.addAddress);
 
 router.get("/customer", customersController.getAddress);
 
-
-
-
-
 export default router;
