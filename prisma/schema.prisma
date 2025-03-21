@@ -100,6 +100,8 @@ model User {
   Order Order[]
 
   Address Address[]
+
+  Otp Otp[]
 }
 
 model Address {
@@ -121,6 +123,16 @@ model Address {
 enum UserType {
   ADMIN
   USER
+}
+
+model Otp {
+  id        String   @id @default(cuid())
+  otp       String
+  userphone String   @unique
+  user      User     @relation(fields: [userphone], references: [mobile_no], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  jwt     String?
 }
 
 model Account {
@@ -153,7 +165,7 @@ model Order {
   status      OrderStatus
   fulfillment OrderFulfillment
   addressId   String
-  address     Address         @relation(fields: [addressId], references: [id])
+  address     Address          @relation(fields: [addressId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

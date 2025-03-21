@@ -15,6 +15,13 @@ const envSchema = z.object({
   CLOUDINARY_API_SECRET: z.string(),
   FRONTENDURL: z.string().url(),
   AUTH_SECRET: z.string(),
+  WHATSAPP_API_TOKEN: z.string(),
+  WHATSAPP_MOBILE: z.string(),
+  WHATSAPP_MOBILE_ID: z.string(),
+  WHATSAPP_BUISSNESS_ID: z.string(),
+
+
+
 });
 
 

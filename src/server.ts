@@ -59,6 +59,7 @@ import categoryRouter from './routes/category.routes.js'
 import customersRoutes from './routes/customers.routes.js'
 import orderRoutes from './routes/order.routes.js'
 
+app.use(globalErrorHandler);
 app.use("/api/products", UserRouter);
 // app.use(Paths.Base, BaseRouter);
 
@@ -71,7 +72,7 @@ app.use("/api/customers",customersRoutes);
 app.use("/api/orders",orderRoutes);
 
 // Add error handler
-app.use(globalErrorHandler);
+
 // app.use(authenticateJWT)
 
 

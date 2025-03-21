@@ -7,7 +7,7 @@
   "scripts": {
     "start": "prisma generate && set NODE_ENV=PRODUCTION & node dist/index.js",
     "build": "npx tsc -p .",
-    "dev": "npx tsc -p . && prisma generate && nodemon dist/index.js",
+    "dev": "prisma generate && concurrently \"npx tsc -w\" \"nodemon dist/index.js\"",
     "watch": "npx tsc -w"
   },
   "keywords": [],
@@ -16,6 +16,7 @@
   "dependencies": {
     "@prisma/client": "^6.4.1",
     "@types/multer": "^1.4.12",
+    "axios": "^1.8.4",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.5.1",
     "cookie-parser": "^1.4.7",
@@ -25,6 +26,7 @@
     "express-async-errors": "^3.1.1",
     "express-async-handler": "^1.2.0",
     "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "multer": "1.4.5-lts.1",
     "next-auth": "5.0.0-beta.25",
@@ -34,8 +36,10 @@
     "@types/cookie-parser": "^1.4.8",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.13.5",
+    "concurrently": "^9.1.2",
     "nodemon": "^3.1.9",
     "prisma": "^6.4.1",
     "ts-node": "^10.9.2",
