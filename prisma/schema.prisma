@@ -243,3 +243,14 @@ model Testimonial {
   updatedAt   DateTime @updatedAt
 }
 
+model ContactForm {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  phone       String
+  message     String
+  Status      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
