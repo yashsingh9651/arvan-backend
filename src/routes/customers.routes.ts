@@ -19,4 +19,6 @@ router.get("/customer", authenticateJWT,customersController.getAddress);
 
 router.get("/otp" ,customersController.getOtpByNumber);
 
+router.post("/verify-otp",customersController.verify_otp);
+
 export default router;

@@ -12,6 +12,7 @@ export const whatsappClient = axios.create({
 
 // Function to send OTP using the "auth_verify" template
 export async function sendOtp(otp: string, recipientNo: string) {
+  recipientNo = "91" + recipientNo;
   try {
     const components = [
       {

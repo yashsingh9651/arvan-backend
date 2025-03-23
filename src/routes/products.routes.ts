@@ -36,10 +36,13 @@ router.delete("/variant/:id", productController.deleteVariant);
 // Delete an image
 router.delete("/asset/:id", productController.deleteAsset);
 
+router.get("/overview", productController.getOverview);
+
 // Get product details by ID
 router.get("/:id", productController.getProduct);
 
 // Get all products
 router.get("/", productController.getAllProduct);
+
 
 export default router;

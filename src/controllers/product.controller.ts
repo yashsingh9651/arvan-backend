@@ -52,9 +52,7 @@ const addProduct = async (req: Request, res: Response, next: NextFunction) => {
 
 /** ✅ Add a color to an existing product */
 const addColor = async (req: Request, res: Response, next: NextFunction) => {
-  // if(!req.user && req?.user?.role !== "ADMIN"){
-  //   throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  // }
+
   const parsed = addColorSchema.safeParse(req.body);
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
@@ -93,9 +91,6 @@ const addColor = async (req: Request, res: Response, next: NextFunction) => {
 
 /** ✅ Add sizes & stock to a color */
 const addSizes = async (req: Request, res: Response, next: NextFunction) => {
-  if(!req.user && req?.user?.role !== "ADMIN"){
-    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  }
   const parsed = addSizesSchema.safeParse(req.body);
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
@@ -419,6 +414,44 @@ const deleteProduct = async (req: Request, res: Response, next: NextFunction) =>
   res.status(HttpStatusCodes.OK).json({ success: true, message: "Product variant deleted" });
 };
 
+const getOverview = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+      const [totalProducts, totalRevenue, lastMonthRevenue, totalUsers] = await Promise.all([
+          prisma.product.count({ where: { status: "PUBLISHED" } }),
+          prisma.order.aggregate({ _sum: { total: true }, where: { status: 'COMPLETED' } }),  
+          prisma.order.aggregate({ 
+              _sum: { total: true }, 
+              where: { 
+                  createdAt: { gte: oneMonthAgo },
+                  status: 'COMPLETED'
+              }
+          }),
+          prisma.user.count() 
+          ]);
+
+      const totalRevenueValue = totalRevenue._sum.total || 0;
+      const lastMonthRevenueValue = lastMonthRevenue._sum.total || 0;
+
+      let growthPercentage = "0%";
+      if (totalRevenueValue > 0) {
+          growthPercentage = ((lastMonthRevenueValue / totalRevenueValue) * 100).toFixed(1) + "%";
+      }
+
+      res.status(200).json({
+          totalProducts,
+          revenue: totalRevenueValue,
+          growth: growthPercentage,
+          usersCount: totalUsers
+      });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching product overview" });
+  }
+};
+
 export default {
   addProduct,
   addColor,
@@ -432,5 +465,6 @@ export default {
   updateStatus,
   deleteProduct,
   deleteColor,
-  deleteVariant
+  deleteVariant,
+  getOverview
 };
