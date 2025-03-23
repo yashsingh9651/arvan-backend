@@ -4,7 +4,7 @@ import { authenticateJWT,isAdmin } from '../middleware/globalerrorhandler.js';
 
 const router = Router();
 
-router.get("/",authenticateJWT,isAdmin,categoryController.getAllCategories);
+router.get("/",authenticateJWT,categoryController.getAllCategories);
 
 router.post("/", authenticateJWT,categoryController.addCategory);
 

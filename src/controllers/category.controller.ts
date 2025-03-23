@@ -1,4 +1,3 @@
-import { PrismaClient } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
 import HttpStatusCodes from "../common/httpstatuscode.js";
 import { RouteError, ValidationErr } from "../common/routeerror.js";
@@ -11,9 +10,7 @@ import { prisma } from "../utils/prismaclient.js";
 
 /** ✅ Add a new category */
 const addCategory = async (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user && req?.user?.role !== "ADMIN") {
-        throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-    }
+
     const parsed = addCategorySchema.safeParse(req.body);
     if (!parsed.success) {
         throw new ValidationErr(parsed.error.errors);

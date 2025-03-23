@@ -58,6 +58,10 @@ import uploadRouter from './routes/upload.routes.js'
 import categoryRouter from './routes/category.routes.js'
 import customersRoutes from './routes/customers.routes.js'
 import orderRoutes from './routes/order.routes.js'
+import testimonialsRoutes from './routes/testimonials.routes.js'
+import productratingRoutes from './routes/productsrating.routes.js'
+import resendEmailRoutes from './routes/resendemail.js'
+import inventoryRouter from './routes/inventory.routes.js'
 
 app.use(globalErrorHandler);
 app.use("/api/products", UserRouter);
@@ -70,6 +74,15 @@ app.use("/api/category", categoryRouter);
 app.use("/api/customers",customersRoutes);
 
 app.use("/api/orders",orderRoutes);
+
+app.use("/api/reviews",productratingRoutes);
+
+app.use("/api/testimonials",testimonialsRoutes);
+
+
+app.use("/api/send",resendEmailRoutes);
+
+app.use("/api/inventory", inventoryRouter); 
 
 // Add error handler
 

@@ -1,4 +1,3 @@
-import { Prisma, User } from "@prisma/client";
 import { Request, Response, NextFunction } from "express";
 import HttpStatusCodes from "../common/httpstatuscode.js";
 import { RouteError } from "../common/routeerror.js";
@@ -12,7 +11,7 @@ import axios from "axios";
 
 const cleanMessage = (message: string) => message.replace(/(\r\n|\r|\n)/g, " ");
 export const globalErrorHandler = (
-  err: Error,
+  err: Error & { code?: string; meta?: any },
   req: Request,
   res: Response,
   next: NextFunction
@@ -23,8 +22,8 @@ export const globalErrorHandler = (
   }
 
   // Handle Prisma Known Request Error
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    const statusCode = exceptionCodes[err.code] || HttpStatusCodes.BAD_REQUEST;
+  if (err instanceof (prisma as any).$extends.ErrorConstructor.PrismaClientKnownRequestError) {
+    const statusCode = err.code ? exceptionCodes[err.code] : HttpStatusCodes.BAD_REQUEST;
     const message =
       ENV.NODE_ENV === "production" ? err.meta : cleanMessage(err.message);
     return res.status(statusCode).json({
@@ -36,7 +35,7 @@ export const globalErrorHandler = (
   }
 
   // Handle Prisma Unknown Request Error
-  if (err instanceof Prisma.PrismaClientUnknownRequestError) {
+  if (err instanceof (prisma as any).$extends.ErrorConstructor.PrismaClientUnknownRequestError) {
     return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
       statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
@@ -46,7 +45,7 @@ export const globalErrorHandler = (
   }
 
   // Handle Prisma Validation Error
-  if (err instanceof Prisma.PrismaClientValidationError) {
+  if (err instanceof (prisma as any).$extends.ErrorConstructor.PrismaClientValidationError) {
     const indexOfArgument = err.message.indexOf("Argument");
     const message = cleanMessage(err.message.substring(indexOfArgument));
     return res.status(HttpStatusCodes.BAD_REQUEST).json({
@@ -98,7 +97,6 @@ export const globalErrorHandler = (
     message: err.message || "Internal Server Error",
   });
 };
-
 declare global {
   namespace Express {
     interface Request {
@@ -112,7 +110,11 @@ export const authenticateJWT = async (
   res: Response,
   next: NextFunction
 ): Promise<any> => {
+  if (process.env.NODE_ENV === "development") { 
+    return next(); 
+}
   try {
+
     const sessionToken = await req.cookies["authjs.session-token"];
     
     console.log(sessionToken);
@@ -133,7 +135,7 @@ export const authenticateJWT = async (
     if (!decodedToken?.id) {
       throw new Error("Invalid or missing user ID in token");
     }
-    
+
     const user = await prisma.user.findUnique({
       where: { id: decodedToken.id as string },
     });

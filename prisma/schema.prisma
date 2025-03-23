@@ -20,6 +20,8 @@ model Product {
   status        ProductStatus  @default(DRAFT)
   colors        ProductColor[]
   assets        ProductAsset[]
+  ProductRating  ProductRating[]
+
 }
 
 model ProductColor {
@@ -83,6 +85,7 @@ enum VariantsValues {
 }
 
 model User {
+
   id                String    @id @default(cuid())
   name              String?
   mobile_no         String    @unique
@@ -93,12 +96,11 @@ model User {
   sessions          Session[]
   password          String?
   role              UserType  @default(USER)
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  Order Order[]
-
+  Order       Order[]
+  ProductRating ProductRating[]
   Address Address[]
 
   Otp Otp[]
@@ -211,3 +213,33 @@ model VerificationToken {
 
   @@id([identifier, token])
 }
+
+
+model ProductRating {
+  id          String   @id @default(cuid())
+  userId      String? // Foreign key for user (optional for guest users)
+  productId   String // Foreign key for product
+  title       String
+  description String
+  image       String?
+  rating      Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+}
+
+model Testimonial {
+  id          String   @id @default(cuid())
+  username    String
+  role        String
+  description String
+  image       String
+  ratings     Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+

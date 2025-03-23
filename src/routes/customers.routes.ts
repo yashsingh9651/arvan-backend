@@ -19,8 +19,4 @@ router.get("/customer", authenticateJWT,customersController.getAddress);
 
 router.get("/otp" ,customersController.getOtpByNumber);
 
-
-
-
-
 export default router;
