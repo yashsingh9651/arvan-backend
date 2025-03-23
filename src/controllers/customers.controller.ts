@@ -46,9 +46,9 @@ const allCustomers = async (
           orderBy: {
             createdAt: "desc",
           },
-        },
+        }
 
-      });
+      }})
   
       const formattedCustomers = customers.map((customer: { Order: any[]; id: any; name: any; mobile_no: any; }) => {
         const totalOrders = customer.Order.length;
@@ -205,41 +205,58 @@ const getAddress = async (req: Request, res: Response, next: NextFunction) => {
 const generateSecureOTP = (): string => {
   return crypto.randomInt(1000000, 9999999).toString(); // Always 7 characters
 };
+  const getOtpByNumber = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { mobile_no } = req.query;
 
-const getOtpByNumber = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { mobile_no } = req.user;
-  const findOtp = await prisma.otp.findUnique({
-    where: {
-      userphone: req.user.mobile_no,
-    },
-  });
+    if (!mobile_no || typeof mobile_no !== 'string') {
+      throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing mobile number");
+    }
 
-  if (findOtp) {
-    await prisma.otp.delete({
+    const findOtp = await prisma.otp.findUnique({
       where: {
-        userphone: req.user.mobile_no,
+        userphone: mobile_no,
       },
     });
+
+    if (findOtp) {
+      const timeDiff = new Date().getTime() - new Date(findOtp.createdAt).getTime();
+      const minutesPassed = Math.floor(timeDiff / (1000 * 60));
+    
+      if (minutesPassed < 15) {
+        // throw new RouteError(HttpStatusCodes.BAD_REQUEST, `Please wait ${15 - minutesPassed} minutes before requesting a new OTP`);
+        res.status(HttpStatusCodes.ACCEPTED).json({
+          success: false,
+          message: `Please wait ${15 - minutesPassed} minutes before requesting a new OTP`,
+        });
+        return;
+      }
+
+      await prisma.otp.delete({
+        where: {
+          userphone: mobile_no,
+        },
+      });
+    }
+    console.log("getOtp");
+    const getOtp = generateSecureOTP();
+
+    await sendOtp(getOtp, mobile_no);
+    await prisma.otp.create({
+      data: {
+        userphone: mobile_no,
+        otp: getOtp,
+        createdAt: new Date(),
+      },
+    });
+
+    res
+      .status(HttpStatusCodes.OK)
+      .json({ success: true, message: "OTP sent successfully" });
   }
-  console.log("getOtp");
-  const getOtp = generateSecureOTP();
-
-  await sendOtp(getOtp, mobile_no);
-  await prisma.otp.create({
-    data: {
-      userphone: mobile_no,
-      otp: getOtp,
-    },
-  });
-
-  res
-    .status(HttpStatusCodes.OK)
-    .json({ success: true, message: "OTP sent successfully" });
-};
 function generateToken(payload: object): string {
   const options: SignOptions = {
     expiresIn: "1h", // Ensure this aligns with the expected type
@@ -258,28 +275,27 @@ function verifyToken(token: string) {
   }
 }
 
-const verfy_otp = async (req: Request, res: Response, next: NextFunction) => {
-  const { mobile_no, id } = req.user;
+const verify_otp = async (req: Request, res: Response, next: NextFunction) => {
   const parseddata = getOtpSchema.safeParse(req.body);
 
   if (!parseddata.success) {
     throw new ValidationErr(parseddata.error.errors);
   }
 
-  const { otp, type } = parseddata.data;
+  const { mobileNumber, otp, type } = parseddata.data;
   const findOtp = await prisma.otp.findUnique({
     where: {
-      userphone: req.user.mobile_no,
+      userphone: mobileNumber,
     },
   });
   if (!findOtp || findOtp.otp !== otp) {
     throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Invalid OTP");
   }
 
-  if (type === "verifyemail") {
+  if (type === "verify") {
     await prisma.user.update({
       where: {
-        mobile_no: req.user.mobile_no,
+        mobile_no: mobileNumber,
       },
       data: {
         isPhoneNoVerified: true,
@@ -288,17 +304,17 @@ const verfy_otp = async (req: Request, res: Response, next: NextFunction) => {
 
     await prisma.otp.delete({
       where: {
-        userphone: mobile_no,
+        userphone: mobileNumber,
       },
     });
     res
       .status(HttpStatusCodes.OK)
       .json({ success: true, message: "mobile verified successfully" });
   } else {
-    const token = generateToken({ mobile_no, id });
+    const token = generateToken({ mobileNumber });
     await prisma.otp.update({
       where: {
-        userphone: mobile_no,
+        userphone: mobileNumber,
       },
       data: {
         jwt: token,
@@ -372,4 +388,5 @@ export default {
   updateAddress,
   getAddress,
   getOtpByNumber,
+  verify_otp,
 };
