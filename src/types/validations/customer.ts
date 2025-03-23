@@ -17,3 +17,18 @@ export const addAddressSchema = z.object({
     zipCode: z.string().min(1),
 
 });
+
+
+const OtpTypeEnum = z.enum(["verifyemail", "forgetpassword"]);
+
+// Define the schema for the OTP object
+export const getOtpSchema = z.object({
+  otp: z.string().min(1), // Ensures 'otp' is a non-empty string
+  type: OtpTypeEnum,      // Ensures 'type' is either 'verifyemail' or 'forgetpassword'
+});
+
+
+export const forgetpasswordSchema = z.object({
+  password: z.string().min(1), 
+   token : z.string().min(1),
+});

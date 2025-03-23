@@ -6,6 +6,7 @@ import { NodeEnvs } from "../common/constants.js";
 import { exceptionCodes } from "../common/prismafilter.js";
 import { decode } from "next-auth/jwt";
 import { prisma } from "../utils/prismaclient.js";
+import axios from "axios";
 
 
 const cleanMessage = (message: string) => message.replace(/(\r\n|\r|\n)/g, " ");
@@ -57,9 +58,37 @@ export const globalErrorHandler = (
 
   // Handle custom RouteError
   if (err instanceof RouteError) {
+
     return res.status(err.status).json({ success: false, error: err.message });
   }
-
+  if (axios.isAxiosError(err)) {
+    console.log(JSON.stringify(err,null, 2));
+    if (err.response) {
+      // The request was made, and the server responded with a status code
+      return res.status(err.response.status).json({
+        success: false,
+        statusCode: err.response.status,
+        path: req.url,
+        message: err.response.data?.message || "Axios error response",
+      });
+    } else if (err.request) {
+      // The request was made but no response was received
+      return res.status(HttpStatusCodes.GATEWAY_TIMEOUT).json({
+        success: false,
+        statusCode: HttpStatusCodes.GATEWAY_TIMEOUT,
+        path: req.url,
+        message: "No response from server",
+      });
+    } else {
+      // Something happened in setting up the request
+      return res.status(HttpStatusCodes.BAD_REQUEST).json({
+        success: false,
+        statusCode: HttpStatusCodes.BAD_REQUEST,
+        path: req.url,
+        message: err.message || "Axios request setup error",
+      });
+    }
+  }
   // Fallback for all other errors
   return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).json({
     success: false,
