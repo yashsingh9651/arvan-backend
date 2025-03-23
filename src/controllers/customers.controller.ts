@@ -47,31 +47,43 @@ const allCustomers = async (
             createdAt: "desc",
           },
         },
+      },
+    });
 
-      });
-  
-      const formattedCustomers = customers.map((customer: { Order: any[]; id: any; name: any; mobile_no: any; }) => {
+    const formattedCustomers = customers.map(
+      (customer: { Order: any[]; id: any; name: any; mobile_no: any }) => {
         const totalOrders = customer.Order.length;
-        const totalSpent = customer.Order.reduce((sum, order) => sum + order.total, 0);
+        const totalSpent = customer.Order.reduce(
+          (sum, order) => sum + order.total,
+          0
+        );
         const lastOrder = customer.Order[0]?.createdAt || null;
-  
+
         return {
           id: customer.id,
           name: customer.name || "N/A",
-         mobile_no: customer.mobile_no,
+          mobile_no: customer.mobile_no,
           totalOrders,
           totalSpent,
           lastOrder,
         };
-      });
-  
-      res.json({ success: true, data: formattedCustomers });
-    } catch (error) {
-      console.error("Error fetching customers:", error);
-      throw new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, "Failed to fetch customers");
-    }
-  };
- const updatecustomer = async(req:Request, res:Response, next:NextFunction) => {
+      }
+    );
+
+    res.json({ success: true, data: formattedCustomers });
+  } catch (error) {
+    console.error("Error fetching customers:", error);
+    throw new RouteError(
+      HttpStatusCodes.INTERNAL_SERVER_ERROR,
+      "Failed to fetch customers"
+    );
+  }
+};
+const updatecustomer = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const { id } = req.user;
 
   if (!id) {
@@ -355,13 +367,15 @@ const forgotPassword = async (
     data: {
       password: hashedPassword,
     },
-  })
+  });
   await prisma.otp.delete({
     where: {
       userphone: tokendata.mobile_no,
     },
   });
-  res.status(HttpStatusCodes.OK).json({ success: true, message: "Password updated successfully" });
+  res
+    .status(HttpStatusCodes.OK)
+    .json({ success: true, message: "Password updated successfully" });
 };
 
 export default {
