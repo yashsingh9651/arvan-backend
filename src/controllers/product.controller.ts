@@ -167,9 +167,7 @@ const updateColor = async (req: Request, res: Response, next: NextFunction) => {
 
 /** ✅ Update stock for a specific size */
 const updateStock = async (req: Request, res: Response, next: NextFunction) => {
-  if(!req.user && req?.user?.role !== "ADMIN"){
-    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  }
+  
   const parsed = updateStockSchema.safeParse(req.body);
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
@@ -186,9 +184,7 @@ const updateStock = async (req: Request, res: Response, next: NextFunction) => {
 
 /** ✅ Delete an asset */
 const deleteAsset = async (req: Request, res: Response, next: NextFunction) => {
-  if(!req.user && req?.user?.role !== "ADMIN"){
-    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  }
+  
   const { id } = req.params;
   if (!id) {
     throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing asset id");
@@ -246,7 +242,6 @@ const getAllProduct = async (
   
   const skip = (page - 1) * limit;
   
-  // Get total count for pagination
   const totalCount = await prisma.product.count({
     where: {
       OR: [
