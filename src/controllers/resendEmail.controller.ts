@@ -1,20 +1,16 @@
 import { Request, Response } from 'express';
 import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import ENV from '../common/env.js';
+import {  ValidationErr } from '../common/routeerror.js';
+const resend = new Resend(ENV.RESEND_API_KEY);
 
 const sendEmail = async (req: Request, res: Response): Promise<void> => {
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
-  }
 
   const { name, email, phone, message } = req.body;
+  
   if(!name || !email || !phone || !message) {
-    res.status(400).json({ error: 'Missing required fields' });
-    return;
+    throw new ValidationErr("Missing required fields");
   }
-
   const emailContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);">
       <div style="background: #007bff; color: #fff; padding: 15px; text-align: center; font-size: 20px;">
@@ -33,26 +29,20 @@ const sendEmail = async (req: Request, res: Response): Promise<void> => {
     </div>
   `;
 
-  try {
     const response = await resend.emails.send({
-      from: process.env.RESEND_TESTINGEMAIL || '', 
-      to: process.env.RESEND_EMAIL|| '',
+      from: ENV.RESEND_EMAIL,
+      to: email,
       subject: 'New Form Submission Received ✅',
       text: emailContent,
     });
 
-    res.status(200).json({
-      success: true,
-      message: 'Email sent successfully!',
-      data: response
-    });
-  } catch (error) {
-    console.error('Error sending email:', error);
-    res.status(500).json({
-      error: 'Failed to send email',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
+    if (response.data) {
+      res.status(200).json({ message: 'Email sent successfully' });
+    } else {
+      console.error('Failed to send email:', response.error);
+      res.status(500).json({ message: 'Failed to send email' });
+    }
+
 };
 
 export default { sendEmail };

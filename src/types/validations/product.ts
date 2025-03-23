@@ -45,7 +45,7 @@ export const addColorSchema = z.object({
 });
 
 export const addSizesSchema = z.object({
-  colorId: z.string().uuid("Invalid color ID"),
+  colorId: z.string().cuid("Invalid color ID"),
   sizes: z.array(
     z.object({
       size: z.nativeEnum(VariantsValues, {
@@ -57,6 +57,6 @@ export const addSizesSchema = z.object({
 });
 
 export const updateStockSchema = z.object({
-  variantId: z.string().uuid("Invalid variant ID"),
+  variantId: z.string().cuid("Invalid variant ID"),
   stock: z.number().int().min(0, "Stock must be a non-negative integer"),
 });

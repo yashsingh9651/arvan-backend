@@ -15,6 +15,8 @@ const envSchema = z.object({
   CLOUDINARY_API_SECRET: z.string(),
   FRONTENDURL: z.string().url(),
   AUTH_SECRET: z.string(),
+  RESEND_API_KEY: z.string(),
+  RESEND_EMAIL: z.string(),
 });
 
 

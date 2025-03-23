@@ -61,6 +61,7 @@ import orderRoutes from './routes/order.routes.js'
 import testimonialsRoutes from './routes/testimonials.routes.js'
 import productratingRoutes from './routes/productsrating.routes.js'
 import resendEmailRoutes from './routes/resendemail.js'
+import inventoryRouter from './routes/inventory.routes.js'
 
 app.use("/api/products", UserRouter);
 // app.use(Paths.Base, BaseRouter);
@@ -79,6 +80,8 @@ app.use("/api/testimonials",testimonialsRoutes);
 
 
 app.use("/api/send",resendEmailRoutes);
+
+app.use("/api/inventory", inventoryRouter); 
 
 // Add error handler
 app.use(globalErrorHandler);
