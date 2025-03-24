@@ -112,9 +112,12 @@ export const authenticateJWT = async (
 ): Promise<any> => {
 
   try {
+    console.log("Authenticating JWT");
+    console.log(req.cookies);
 
     const sessionToken = await req.cookies[ENV.NODE_ENV === "production" ? "__Secure-authjs.session-token" : "authjs.session-token"];
-        
+
+    console.log(sessionToken);
     if (!sessionToken) {
       throw new RouteError(403, "Unauthorized: No token found");
     }
@@ -128,6 +131,7 @@ export const authenticateJWT = async (
         : "authjs.session-token",
 
     });
+    console.log(decodedToken);
 
     if (!decodedToken) {
       throw new RouteError(403, "Unauthorized: Invalid token");
