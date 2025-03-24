@@ -60,9 +60,9 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
+app.set("trust proxy", 1); 
 
 app.use(cors(corsOptions));
-app.set("trust proxy", 1); 
 // Add APIs, must be after middleware
 
 import UserRouter from './routes/products.routes.js'
