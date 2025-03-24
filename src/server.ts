@@ -23,7 +23,6 @@ import cookieParser from 'cookie-parser'
 
 const app = express();
 
-
 // **** Middleware **** //
 
 // Basic middleware
@@ -36,10 +35,22 @@ if (ENV.NODE_ENV === NodeEnvs.Dev) {
   app.use(morgan('dev'));
 }
 
-// Security
-if (ENV.NODE_ENV === NodeEnvs.Production) {
-  app.use(helmet());
-}
+// // Security
+// if (ENV.NODE_ENV === NodeEnvs.Production) {
+//   app.use(
+//   helmet({
+//     contentSecurityPolicy: {
+//       directives: {
+//         defaultSrc: ["'self'"],
+//         scriptSrc: ["'self'", "https://arvan-kappa.vercel.app"],
+//         styleSrc: ["'self'", "https://arvan-kappa.vercel.app"],
+//         connectSrc: ["'self'", "https://arvan-kappa.vercel.app"],
+//       },
+//     },
+//   })
+// );
+
+// }
 
 //CORS
 const whitelist = [ENV.FRONTENDURL];
@@ -49,6 +60,7 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
+app.set("trust proxy", 1); 
 
 app.use(cors(corsOptions));
 // Add APIs, must be after middleware
