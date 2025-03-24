@@ -113,7 +113,7 @@ export const authenticateJWT = async (
 
   try {
 
-    const sessionToken = await req.cookies["authjs.session-token"];
+    const sessionToken = await req.cookies[ENV.NODE_ENV === "production" ? "__Secure-authjs.session-token" : "authjs.session-token"];
         
     if (!sessionToken) {
       throw new RouteError(403, "Unauthorized: No token found");
