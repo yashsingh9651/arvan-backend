@@ -104,7 +104,6 @@ const addAddress = async (req: Request, res: Response, next: NextFunction) => {
   if (!id) {
     throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing customer id");
   }
-
   // const { address } = req.body;
   const parsedData = addAddressSchema.safeParse(req.body);
 

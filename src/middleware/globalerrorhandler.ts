@@ -122,7 +122,11 @@ export const authenticateJWT = async (
     const decodedToken = await decode({
       token: sessionToken,
       secret: ENV.AUTH_SECRET,
-      salt: "authjs.session-token",
+      salt:
+      ENV.NODE_ENV === "production"
+        ? "__Secure-authjs.session-token"
+        : "authjs.session-token",
+
     });
 
     if (!decodedToken) {
