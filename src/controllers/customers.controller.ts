@@ -104,7 +104,6 @@ const addAddress = async (req: Request, res: Response, next: NextFunction) => {
   if (!id) {
     throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing customer id");
   }
-
   // const { address } = req.body;
   const parsedData = addAddressSchema.safeParse(req.body);
 
@@ -380,6 +379,34 @@ const forgotPassword = async (
   res.status(HttpStatusCodes.OK).json({ success: true, message: "Password updated successfully" });
 };
 
+const makeAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  const { mobile_no } = req.body;
+
+  const user = await prisma.user.findUnique({
+    where: {
+      mobile_no: mobile_no,
+    },
+  });
+
+  if (!user) {
+    throw new RouteError(HttpStatusCodes.BAD_REQUEST, "User not found");
+  }
+
+  if ( user.role === "ADMIN") {
+    throw new RouteError(HttpStatusCodes.BAD_REQUEST, "User is already an admin");
+  }
+
+  await prisma.user.update({
+    where: {
+      mobile_no: mobile_no,
+    },
+    data: {
+      role: "ADMIN",
+    },
+  });
+  res.status(HttpStatusCodes.OK).json({ success: true, message: "User is now an admin" });
+};
+
 export default {
   allCustomers,
   updatecustomer,
@@ -389,4 +416,5 @@ export default {
   getAddress,
   getOtpByNumber,
   verify_otp,
+  makeAdmin
 };

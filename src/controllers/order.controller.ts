@@ -49,17 +49,19 @@ const getAllOrders = async (req: Request, res: Response, next: NextFunction) => 
     throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
   }
 
+  const limit = parseInt(req.query.limit as string) || 10;
+  const page = parseInt(req.query.page as string) || 1;
+  const skip = (page - 1) * limit;
 
   const orders = await prisma.order.findMany({
     where: req.user.role === "ADMIN" ? {} : { userId: req.user.id }, // Admin gets all orders, user gets only their orders
     include: { items: true },
+    take: limit,
+    skip: skip,
   });
-
-  
 
   res.status(HttpStatusCodes.OK).json({ success: true, orders });
 };
-
 /** ✅ Get a single order by ID */
 const getOrderById = async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {

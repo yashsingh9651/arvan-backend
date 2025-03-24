@@ -110,15 +110,11 @@ export const authenticateJWT = async (
   res: Response,
   next: NextFunction
 ): Promise<any> => {
-  if (process.env.NODE_ENV === "development") { 
-    return next(); 
-}
+
   try {
 
     const sessionToken = await req.cookies["authjs.session-token"];
-    
-    console.log(sessionToken);
-    
+        
     if (!sessionToken) {
       throw new RouteError(403, "Unauthorized: No token found");
     }
@@ -126,7 +122,11 @@ export const authenticateJWT = async (
     const decodedToken = await decode({
       token: sessionToken,
       secret: ENV.AUTH_SECRET,
-      salt: "authjs.session-token",
+      salt:
+      ENV.NODE_ENV === "production"
+        ? "__Secure-authjs.session-token"
+        : "authjs.session-token",
+
     });
 
     if (!decodedToken) {
@@ -140,7 +140,6 @@ export const authenticateJWT = async (
       where: { id: decodedToken.id as string },
     });
 
-    console.log(user)
     if (!user) {
       throw new RouteError(403, "Unauthorized: User not found");
     }
