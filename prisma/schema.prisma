@@ -254,3 +254,12 @@ model ContactForm {
   updatedAt   DateTime @updatedAt
 }
 
+model SalesSummary {
+  id             String   @id @default(uuid())
+  date           DateTime @unique
+  totalRevenue   Float
+  salesGrowth    Float
+  totalOrders    Int
+  newCustomers   Int
+}
+
