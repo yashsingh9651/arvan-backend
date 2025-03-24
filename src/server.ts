@@ -51,8 +51,6 @@ if (ENV.NODE_ENV === NodeEnvs.Production) {
   );
 }
 
-//CORS
-const whitelist = [ENV.FRONTENDURL];
 const corsOptions = {
   origin: ENV.FRONTENDURL,  // Only allow your frontend URL
   credentials: true,         // Allow credentials (cookies, authorization headers, etc.)

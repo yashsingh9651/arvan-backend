@@ -115,7 +115,7 @@ export const authenticateJWT = async (
     console.log("Authenticating JWT");
     console.log(req.cookies);
 
-    const sessionToken = await req.cookies[ENV.NODE_ENV === "production" ? "__Secure-authjs.session-token" : "authjs.session-token"];
+    const sessionToken = await req.cookies[ENV.NODE_ENV === "production" ? "__Secure-next-auth.session-token" : "next-auth.session-token"];
 
     console.log(sessionToken);
     if (!sessionToken) {
@@ -127,8 +127,8 @@ export const authenticateJWT = async (
       secret: ENV.AUTH_SECRET,
       salt:
       ENV.NODE_ENV === "production"
-        ? "__Secure-authjs.session-token"
-        : "authjs.session-token",
+        ? "__Secure-next-auth.session-token"
+        : "next-auth.session-token",
 
     });
     console.log(decodedToken);
