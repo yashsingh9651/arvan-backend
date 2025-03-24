@@ -37,22 +37,22 @@ if (ENV.NODE_ENV === NodeEnvs.Dev) {
   app.use(morgan('dev'));
 }
 
-// Security
-if (ENV.NODE_ENV === NodeEnvs.Production) {
-  app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "https://arvan-kappa.vercel.app"],
-        styleSrc: ["'self'", "https://arvan-kappa.vercel.app"],
-        connectSrc: ["'self'", "https://arvan-kappa.vercel.app"],
-      },
-    },
-  })
-);
+// // Security
+// if (ENV.NODE_ENV === NodeEnvs.Production) {
+//   app.use(
+//   helmet({
+//     contentSecurityPolicy: {
+//       directives: {
+//         defaultSrc: ["'self'"],
+//         scriptSrc: ["'self'", "https://arvan-kappa.vercel.app"],
+//         styleSrc: ["'self'", "https://arvan-kappa.vercel.app"],
+//         connectSrc: ["'self'", "https://arvan-kappa.vercel.app"],
+//       },
+//     },
+//   })
+// );
 
-}
+// }
 
 //CORS
 const whitelist = [ENV.FRONTENDURL];
