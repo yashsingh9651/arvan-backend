@@ -1,5 +1,6 @@
 import { Router } from "express";
 import orderController from "../controllers/order.controller.js";
+import { authenticateJWT } from "../middleware/globalerrorhandler.js";
 
 const router = Router();
 
@@ -7,7 +8,7 @@ const router = Router();
 router.post("/", orderController.createOrder);
 
 // 📦 Get all orders (Admin gets all, User gets only their orders)
-router.get("/", orderController.getAllOrders);
+router.get("/",authenticateJWT, orderController.getAllOrders);
 
 // 📦 Get a single order by ID (Admin gets any order, User gets only their order)
 router.get("/:id", orderController.getOrderById);

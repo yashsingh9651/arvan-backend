@@ -62,6 +62,7 @@ import testimonialsRoutes from './routes/testimonials.routes.js'
 import productratingRoutes from './routes/productsrating.routes.js'
 import resendEmailRoutes from './routes/resendemail.js'
 import inventoryRouter from './routes/inventory.routes.js'
+import analyticsRoutes from './routes/analytics.routes.js'
 
 app.use(globalErrorHandler);
 app.use("/api/products", UserRouter);
@@ -83,6 +84,8 @@ app.use("/api/testimonials",testimonialsRoutes);
 app.use("/api/send",resendEmailRoutes);
 
 app.use("/api/inventory", inventoryRouter); 
+
+app.use("/api/analytics", analyticsRoutes);
 
 // Add error handler
 
