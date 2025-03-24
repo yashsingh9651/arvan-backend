@@ -234,6 +234,7 @@ const getAllProduct = async (
   const page = parseInt(req.query.page as string) || 1;
   const limit = parseInt(req.query.limit as string) || 10;
   const search = (req.query.search as string) || '';
+  const status = req.query.status as "PUBLISHED" | "DRAFT" | undefined;
   
   const skip = (page - 1) * limit;
   
@@ -242,7 +243,8 @@ const getAllProduct = async (
       OR: [
         { name: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } }
-      ]
+      ],
+      ...(status && { status })
     }
   });
   
@@ -253,7 +255,8 @@ const getAllProduct = async (
       OR: [
         { name: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } }
-      ]
+      ],
+      ...(status && { status })
     },
     include: {
       assets: true,
@@ -273,8 +276,6 @@ const getAllProduct = async (
     }
   });
 };
-
-
 
 
 

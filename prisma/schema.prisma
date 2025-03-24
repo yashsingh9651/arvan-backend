@@ -165,6 +165,7 @@ model Order {
   items       OrderItem[] // Join table for order items
   total       Float
   status      OrderStatus
+  paid         Boolean         @default(false)
   fulfillment OrderFulfillment
   addressId   String
   address     Address          @relation(fields: [addressId], references: [id])
