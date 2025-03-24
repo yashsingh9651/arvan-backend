@@ -27,7 +27,7 @@ const app = express();
 
 // Basic middleware
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Show routes called in console during development
@@ -36,21 +36,20 @@ if (ENV.NODE_ENV === NodeEnvs.Dev) {
 }
 
 // // Security
-// if (ENV.NODE_ENV === NodeEnvs.Production) {
-//   app.use(
-//   helmet({
-//     contentSecurityPolicy: {
-//       directives: {
-//         defaultSrc: ["'self'"],
-//         scriptSrc: ["'self'", "https://arvan-kappa.vercel.app"],
-//         styleSrc: ["'self'", "https://arvan-kappa.vercel.app"],
-//         connectSrc: ["'self'", "https://arvan-kappa.vercel.app"],
-//       },
-//     },
-//   })
-// );
-
-// }
+if (ENV.NODE_ENV === NodeEnvs.Production) {
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "https://arvan-kappa.vercel.app"],
+          styleSrc: ["'self'", "https://arvan-kappa.vercel.app"],
+          connectSrc: ["'self'", "https://arvan-kappa.vercel.app"],
+        },
+      },
+    })
+  );
+}
 
 //CORS
 const whitelist = [ENV.FRONTENDURL];
@@ -60,7 +59,7 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
-app.set("trust proxy", 1); 
+app.set("trust proxy", true);
 
 app.use(cors(corsOptions));
 // Add APIs, must be after middleware
@@ -84,18 +83,18 @@ app.use("/api/upload", uploadRouter);
 
 app.use("/api/category", categoryRouter);
 
-app.use("/api/customers",customersRoutes);
+app.use("/api/customers", customersRoutes);
 
-app.use("/api/orders",orderRoutes);
+app.use("/api/orders", orderRoutes);
 
-app.use("/api/reviews",productratingRoutes);
+app.use("/api/reviews", productratingRoutes);
 
-app.use("/api/testimonials",testimonialsRoutes);
+app.use("/api/testimonials", testimonialsRoutes);
 
 
-app.use("/api/send",resendEmailRoutes);
+app.use("/api/send", resendEmailRoutes);
 
-app.use("/api/inventory", inventoryRouter); 
+app.use("/api/inventory", inventoryRouter);
 
 app.use("/api/analytics", analyticsRoutes);
 
