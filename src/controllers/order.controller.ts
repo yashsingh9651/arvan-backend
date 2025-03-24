@@ -12,34 +12,31 @@ import { prisma } from "../utils/prismaclient.js";
 
 /** ✅ Create a new order */
 const createOrder = async (req: Request, res: Response, next: NextFunction) => {
-  if (!req.user) {
-    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  }
+  
   const parsed = createOrderSchema.safeParse(req.body);
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
   }
+    const { userId, items, total, addressId ,paid} = parsed.data;
 
-  const { userId, items, total,addressId } = parsed.data;
-
-  const order = await prisma.order.create({
-    data: {
-      userId,
-      total,
-      addressId,
-      status: OrderStatus.PENDING,
-      fulfillment: OrderFulfillment.PENDING,
-      items: {
-        create: items.map((item) => ({
-          productVariantId: item.productVariantId,
-          quantity: item.quantity,
-          priceAtOrder: item.priceAtOrder,
-        })),
+    const order = await prisma.order.create({
+      data: {
+        userId,
+        total,
+        addressId,
+        status: OrderStatus.PENDING,
+        paid: paid,
+        fulfillment: OrderFulfillment.PENDING,
+        items: {
+          create: items.map((item) => ({
+            productVariantId: item.productVariantId,
+            quantity: item.quantity,
+            priceAtOrder: item.priceAtOrder,
+          })),
+        },
       },
-    },
-    include: { items: true },
-  });
-
+      include: { items: true },
+    });
   res.status(HttpStatusCodes.CREATED).json({ success: true, order });
 };
 
