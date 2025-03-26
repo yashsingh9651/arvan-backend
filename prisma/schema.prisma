@@ -129,7 +129,7 @@ enum UserType {
 
 model Otp {
   id        String   @id @default(cuid())
-  otp       String
+  otp       String   @unique
   userphone String   @unique
   user      User     @relation(fields: [userphone], references: [mobile_no], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -253,5 +253,14 @@ model ContactForm {
   Status      String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model SalesSummary {
+  id             String   @id @default(uuid())
+  date           DateTime @unique
+  totalRevenue   Float
+  salesGrowth    Float
+  totalOrders    Int
+  newCustomers   Int
 }
 

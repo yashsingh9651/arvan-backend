@@ -35,25 +35,12 @@ if (ENV.NODE_ENV === NodeEnvs.Dev) {
   app.use(morgan('dev'));
 }
 
-// // Security
-if (ENV.NODE_ENV === NodeEnvs.Production) {
-  app.use(
-    helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "https://arvan-kappa.vercel.app"],
-          styleSrc: ["'self'", "https://arvan-kappa.vercel.app"],
-          connectSrc: ["'self'", "https://arvan-kappa.vercel.app"],
-        },
-      },
-    })
-  );
-}
+// Security
+
 
 const corsOptions = {
-  origin: ENV.FRONTENDURL,  // Only allow your frontend URL
-  credentials: true,         // Allow credentials (cookies, authorization headers, etc.)
+  origin: ENV.FRONTENDURL,// Only allow your frontend URL
+  credentials: true,     
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
@@ -72,6 +59,7 @@ import productratingRoutes from './routes/productsrating.routes.js'
 import resendEmailRoutes from './routes/resendemail.js'
 import inventoryRouter from './routes/inventory.routes.js'
 import analyticsRoutes from './routes/analytics.routes.js'
+import getAllTimeMetricsRoutes from './routes/salesmetrics.routes.js'
 
 app.use(globalErrorHandler);
 app.use("/api/products", UserRouter);
@@ -95,6 +83,8 @@ app.use("/api/send", resendEmailRoutes);
 app.use("/api/inventory", inventoryRouter);
 
 app.use("/api/analytics", analyticsRoutes);
+
+app.use("/api/sales", getAllTimeMetricsRoutes);
 
 // Add error handler
 
