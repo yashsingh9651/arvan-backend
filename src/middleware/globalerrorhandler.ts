@@ -1,4 +1,3 @@
-import { Prisma, User } from "@prisma/client";
 import { Request, Response, NextFunction } from "express";
 import HttpStatusCodes from "../common/httpstatuscode.js";
 import { RouteError } from "../common/routeerror.js";
@@ -8,11 +7,12 @@ import { exceptionCodes } from "../common/prismafilter.js";
 import { decode } from "next-auth/jwt";
 import { prisma } from "../utils/prismaclient.js";
 import axios from "axios";
+import util from "util";
 
 
 const cleanMessage = (message: string) => message.replace(/(\r\n|\r|\n)/g, " ");
 export const globalErrorHandler = (
-  err: Error,
+  err: Error & { code?: string; meta?: any },
   req: Request,
   res: Response,
   next: NextFunction
@@ -23,8 +23,8 @@ export const globalErrorHandler = (
   }
 
   // Handle Prisma Known Request Error
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    const statusCode = exceptionCodes[err.code] || HttpStatusCodes.BAD_REQUEST;
+  if (err instanceof (prisma as any).$extends.ErrorConstructor.PrismaClientKnownRequestError) {
+    const statusCode = err.code ? exceptionCodes[err.code] : HttpStatusCodes.BAD_REQUEST;
     const message =
       ENV.NODE_ENV === "production" ? err.meta : cleanMessage(err.message);
     return res.status(statusCode).json({
@@ -36,7 +36,7 @@ export const globalErrorHandler = (
   }
 
   // Handle Prisma Unknown Request Error
-  if (err instanceof Prisma.PrismaClientUnknownRequestError) {
+  if (err instanceof (prisma as any).$extends.ErrorConstructor.PrismaClientUnknownRequestError) {
     return res.status(HttpStatusCodes.INTERNAL_SERVER_ERROR).json({
       success: false,
       statusCode: HttpStatusCodes.INTERNAL_SERVER_ERROR,
@@ -46,7 +46,7 @@ export const globalErrorHandler = (
   }
 
   // Handle Prisma Validation Error
-  if (err instanceof Prisma.PrismaClientValidationError) {
+  if (err instanceof (prisma as any).$extends.ErrorConstructor.PrismaClientValidationError) {
     const indexOfArgument = err.message.indexOf("Argument");
     const message = cleanMessage(err.message.substring(indexOfArgument));
     return res.status(HttpStatusCodes.BAD_REQUEST).json({
@@ -98,7 +98,6 @@ export const globalErrorHandler = (
     message: err.message || "Internal Server Error",
   });
 };
-
 declare global {
   namespace Express {
     interface Request {
@@ -112,11 +111,16 @@ export const authenticateJWT = async (
   res: Response,
   next: NextFunction
 ): Promise<any> => {
+
   try {
-    const sessionToken = await req.cookies["authjs.session-token"];
-    
+   
+    console.log("Authenticating JWT");
+    console.log(req.cookies);
+
+    const sessionToken =
+    (req.headers.authorization ? req.headers.authorization.split(' ')[1] : undefined);
+
     console.log(sessionToken);
-    
     if (!sessionToken) {
       throw new RouteError(403, "Unauthorized: No token found");
     }
@@ -124,8 +128,13 @@ export const authenticateJWT = async (
     const decodedToken = await decode({
       token: sessionToken,
       secret: ENV.AUTH_SECRET,
-      salt: "authjs.session-token",
+      salt:
+      ENV.NODE_ENV === "production"
+        ? "__Secure-authjs.session-token"
+        : "authjs.session-token",
+
     });
+    console.log(decodedToken);
 
     if (!decodedToken) {
       throw new RouteError(403, "Unauthorized: Invalid token");
@@ -133,12 +142,11 @@ export const authenticateJWT = async (
     if (!decodedToken?.id) {
       throw new Error("Invalid or missing user ID in token");
     }
-    
+
     const user = await prisma.user.findUnique({
       where: { id: decodedToken.id as string },
     });
 
-    console.log(user)
     if (!user) {
       throw new RouteError(403, "Unauthorized: User not found");
     }

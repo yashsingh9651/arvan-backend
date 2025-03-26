@@ -24,6 +24,10 @@ const OtpTypeEnum = z.enum(["verifyemail", "forgetpassword"]);
 // Define the schema for the OTP object
 export const getOtpSchema = z.object({
   otp: z.string().min(1), // Ensures 'otp' is a non-empty string
+  jwt:z.string().min(1),      // Ensures 'type' is either 'verifyemail' or 'forgetpassword'
+});
+export const makeotpSchema = z.object({
+  mobile_no: z.string().min(1), // Ensures 'otp' is a non-empty string
   type: OtpTypeEnum,      // Ensures 'type' is either 'verifyemail' or 'forgetpassword'
 });
 

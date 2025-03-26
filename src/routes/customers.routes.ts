@@ -17,7 +17,10 @@ router.post("/customer/address", authenticateJWT,customersController.addAddress)
 
 router.get("/customer", authenticateJWT,customersController.getAddress);
 
-router.get("/otp" ,customersController.getOtpByNumber);
+router.post("/otp" ,customersController.getOtpByNumber);
+
+router.post(`/resend-otp` ,customersController.getOtpByJwt);
+router.post("/verify-otp",customersController.verfy_otp);
 
 
 

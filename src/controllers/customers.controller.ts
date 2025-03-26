@@ -5,6 +5,7 @@ import HttpStatusCodes from "../common/httpstatuscode.js";
 import {
   addAddressSchema,
   getOtpSchema,
+  makeotpSchema,
   updatecustomerSchema,
 } from "../types/validations/customer.js";
 
@@ -213,7 +214,7 @@ const getAddress = async (req: Request, res: Response, next: NextFunction) => {
   res.status(HttpStatusCodes.OK).json({ success: true, address });
 };
 const generateSecureOTP = (): string => {
-  return crypto.randomInt(1000000, 9999999).toString(); // Always 7 characters
+  return crypto.randomInt(100000, 999999).toString(); // Always 7 characters
 };
 
 const getOtpByNumber = async (
@@ -221,38 +222,98 @@ const getOtpByNumber = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { mobile_no } = req.user;
+  console.log(req.body);
+  const parsedData = makeotpSchema.safeParse(req.body);
+
+  if (!parsedData.success) {
+    throw new ValidationErr(parsedData.error.errors);
+  }
+
   const findOtp = await prisma.otp.findUnique({
     where: {
-      userphone: req.user.mobile_no,
+      userphone: parsedData.data.mobile_no,
     },
   });
 
   if (findOtp) {
     await prisma.otp.delete({
       where: {
-        userphone: req.user.mobile_no,
+        userphone: parsedData.data.mobile_no,
       },
     });
   }
   console.log("getOtp");
   const getOtp = generateSecureOTP();
 
-  await sendOtp(getOtp, mobile_no);
+  await sendOtp(getOtp, parsedData.data.mobile_no);
+
+  const jwt = await generateToken({  userphone: parsedData.data.mobile_no,type:parsedData.data.type });
   await prisma.otp.create({
     data: {
-      userphone: mobile_no,
+      userphone: parsedData.data.mobile_no,
       otp: getOtp,
+      jwt: jwt
     },
   });
 
   res
     .status(HttpStatusCodes.OK)
-    .json({ success: true, message: "OTP sent successfully" });
+    .json({ success: true, message: "OTP sent successfully", jwt });
 };
+
+const getOtpByJwt = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log(req.body.jwt);
+  const data:any = verifyToken(req.body.jwt);
+  ;
+  console.log(data);
+  if(!data){
+    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Invalid JWT");
+  }
+  
+
+ 
+
+
+
+  const findOtp = await prisma.otp.findUnique({
+    where: {
+      userphone:data.userphone,
+    },
+  });
+
+  if (findOtp) {
+    await prisma.otp.delete({
+      where: {
+        userphone: data.userphone,
+      },
+    });
+  }
+  console.log("getOtp");
+  const getOtp = generateSecureOTP();
+
+  await sendOtp(getOtp, data.userphone);
+
+  const jwt = await generateToken({  userphone: data.userphone,type:data.type });
+  await prisma.otp.create({
+    data: {
+      userphone: data.userphone,
+      otp: getOtp,
+      jwt: jwt
+    },
+  });
+
+  res
+    .status(HttpStatusCodes.OK)
+    .json({ success: true, message: "OTP sent successfully", jwt });
+};
+
 function generateToken(payload: object): string {
   const options: SignOptions = {
-    expiresIn: "1h", // Ensure this aligns with the expected type
+    expiresIn: "15m", // Ensure this aligns with the expected type
     // other options
   };
 
@@ -268,28 +329,42 @@ function verifyToken(token: string) {
   }
 }
 
+
 const verfy_otp = async (req: Request, res: Response, next: NextFunction) => {
-  const { mobile_no, id } = req.user;
+  
   const parseddata = getOtpSchema.safeParse(req.body);
 
   if (!parseddata.success) {
     throw new ValidationErr(parseddata.error.errors);
   }
 
-  const { otp, type } = parseddata.data;
+  const { otp, jwt } = parseddata.data;
+  console.log(jwt,otp);
+
+  const verifyJwt: any = verifyToken(jwt)
+  console.log(verifyJwt);
+
+
+  if (!verifyJwt) {
+    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Invalid JWT");
+  }
+
+
   const findOtp = await prisma.otp.findUnique({
     where: {
-      userphone: req.user.mobile_no,
+     userphone:verifyJwt.userphone,
+      otp: otp,
+      jwt:jwt
     },
   });
-  if (!findOtp || findOtp.otp !== otp) {
+  if (!findOtp ) {
     throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Invalid OTP");
   }
 
-  if (type === "verifyemail") {
+  if (verifyJwt.type === "verifyemail") {
     await prisma.user.update({
       where: {
-        mobile_no: req.user.mobile_no,
+        mobile_no: findOtp.userphone,
       },
       data: {
         isPhoneNoVerified: true,
@@ -298,26 +373,31 @@ const verfy_otp = async (req: Request, res: Response, next: NextFunction) => {
 
     await prisma.otp.delete({
       where: {
-        userphone: mobile_no,
+        otp: findOtp.otp,
       },
     });
     res
       .status(HttpStatusCodes.OK)
       .json({ success: true, message: "mobile verified successfully" });
   } else {
-    const token = generateToken({ mobile_no, id });
+    const token = generateToken({
+      mobile_no: findOtp.userphone,
+      id: findOtp.id,
+      
+    });
     await prisma.otp.update({
       where: {
-        userphone: mobile_no,
+        userphone: findOtp.userphone,
       },
       data: {
         jwt: token,
       },
     });
+    console.log(token);
     res.status(HttpStatusCodes.OK).json({
       success: true,
       message: "OTP verified successfully",
-      token: token,
+      jwt: token,
     });
   }
 };
@@ -327,7 +407,7 @@ const forgotPassword = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { mobile_no, id } = req.user;
+ 
   const { password, token } = req.body;
   const parsedData = forgetpasswordSchema.safeParse(req.body);
 
@@ -339,13 +419,13 @@ const forgotPassword = async (
   if (!tokendata) {
     throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Invalid token");
   }
-  if (tokendata.mobile_no !== mobile_no || tokendata.id !== id) {
+  if (tokendata.mobile_no || !tokendata.id) {
     throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Invalid token");
   }
 
   const otp = await prisma.otp.findUnique({
     where: {
-      userphone: tokendata.mobile_no,
+      id: tokendata.id,
     },
   });
 
@@ -382,4 +462,9 @@ export default {
   updateAddress,
   getAddress,
   getOtpByNumber,
+  getOtpByJwt,
+  forgotPassword,
+  verfy_otp,
+
+
 };

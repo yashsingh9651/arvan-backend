@@ -37,15 +37,13 @@ if (ENV.NODE_ENV === NodeEnvs.Dev) {
 }
 
 // Security
-if (ENV.NODE_ENV === NodeEnvs.Production) {
-  app.use(helmet());
-}
+
 
 //CORS
 const whitelist = [ENV.FRONTENDURL];
 const corsOptions = {
-  origin: ENV.FRONTENDURL,  // Only allow your frontend URL
-  credentials: true,         // Allow credentials (cookies, authorization headers, etc.)
+  origin: ENV.FRONTENDURL,// Only allow your frontend URL
+  credentials: true,     
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
