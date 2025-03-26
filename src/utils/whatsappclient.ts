@@ -12,8 +12,10 @@ export const whatsappClient = axios.create({
 
 // Function to send OTP using the "auth_verify" template
 export async function sendOtp(otp: string, recipientNo: string) {
-  recipientNo = "91" + recipientNo;
+  recipientNo = recipientNo;
   try {
+    const response = await whatsappClient.get(`/${ENV.WHATSAPP_BUISSNESS_ID}/message_templates`);
+    console.log("Templates Retrieved:", JSON.stringify(response.data, null, 2));
     const components = [
       {
         type: "body",
@@ -49,14 +51,18 @@ export async function sendOtp(otp: string, recipientNo: string) {
       },
     };
 
+
     const result = await whatsappClient.post(
       `/${ENV.WHATSAPP_MOBILE_ID}/messages`,
       payload
     );
+
+    console.log("Message Sent:", result.data);
     return result.data;
   } catch (error: any) {
-    console.error("Error in sendOtp:", JSON.stringify(error, null, 2));
-    throw error;
+ 
+    console.error("Error in sendOtp:", JSON.stringify(error, null, 5));
+    
   }
 }
 

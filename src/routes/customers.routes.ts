@@ -17,10 +17,14 @@ router.post("/customer/address", authenticateJWT,customersController.addAddress)
 
 router.get("/customer", authenticateJWT,customersController.getAddress);
 
-router.get("/otp" ,customersController.getOtpByNumber);
+router.post("/otp" ,customersController.getOtpByNumber);
 
-router.post("/verify-otp",customersController.verify_otp);
+router.post(`/resend-otp` ,customersController.getOtpByJwt);
+router.post("/verify-otp",customersController.verfy_otp);
+
+router.post("/verify-otp",customersController.verfy_otp);
 
 router.post("/makeAdmin", customersController.makeAdmin);
+router.post("/reset-password",customersController.forgotPassword);
 
 export default router;

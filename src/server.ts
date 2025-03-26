@@ -35,27 +35,14 @@ if (ENV.NODE_ENV === NodeEnvs.Dev) {
   app.use(morgan('dev'));
 }
 
-// // Security
-if (ENV.NODE_ENV === NodeEnvs.Production) {
-  app.use(
-    helmet({
-      contentSecurityPolicy: {
-        directives: {
-          defaultSrc: ["'self'"],
-          scriptSrc: ["'self'", "https://arvan-kappa.vercel.app"],
-          styleSrc: ["'self'", "https://arvan-kappa.vercel.app"],
-          connectSrc: ["'self'", "https://arvan-kappa.vercel.app"],
-        },
-      },
-    })
-  );
-}
+// Security
+
 
 //CORS
 const whitelist = [ENV.FRONTENDURL];
 const corsOptions = {
-  origin: ENV.FRONTENDURL,  // Only allow your frontend URL
-  credentials: true,         // Allow credentials (cookies, authorization headers, etc.)
+  origin: ENV.FRONTENDURL,// Only allow your frontend URL
+  credentials: true,     
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
