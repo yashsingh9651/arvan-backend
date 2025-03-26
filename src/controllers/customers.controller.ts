@@ -320,7 +320,7 @@ function verifyToken(token: string) {
 
 
 const verfy_otp = async (req: Request, res: Response, next: NextFunction) => {
-  
+  console.log(req.body)
   const parseddata = getOtpSchema.safeParse(req.body);
 
   if (!parseddata.success) {
@@ -350,13 +350,14 @@ const verfy_otp = async (req: Request, res: Response, next: NextFunction) => {
     throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Invalid OTP");
   }
 
-  if (verifyJwt.type === "verifyemail") {
+  if (verifyJwt.type === "verify") {
     await prisma.user.update({
       where: {
         mobile_no: findOtp.userphone,
       },
       data: {
         isPhoneNoVerified: true,
+        phoneNoVerified: new Date(),
       },
     });
 
@@ -404,13 +405,11 @@ const forgotPassword = async (
     throw new ValidationErr(parsedData.error.errors);
   }
   const tokendata: any = verifyToken(token);
-
+console.log(tokendata);
   if (!tokendata) {
     throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Invalid token");
   }
-  if (tokendata.mobile_no || !tokendata.id) {
-    throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Invalid token");
-  }
+ 
 
   const otp = await prisma.otp.findUnique({
     where: {
@@ -482,6 +481,7 @@ export default {
   getOtpByJwt,
   forgotPassword,
   verfy_otp,
+  makeAdmin
 
 
 };
