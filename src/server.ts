@@ -23,12 +23,11 @@ import cookieParser from 'cookie-parser'
 
 const app = express();
 
-
 // **** Middleware **** //
 
 // Basic middleware
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Show routes called in console during development
@@ -47,6 +46,7 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
+app.set("trust proxy", true);
 
 app.use(cors(corsOptions));
 // Add APIs, must be after middleware
@@ -56,6 +56,12 @@ import uploadRouter from './routes/upload.routes.js'
 import categoryRouter from './routes/category.routes.js'
 import customersRoutes from './routes/customers.routes.js'
 import orderRoutes from './routes/order.routes.js'
+import testimonialsRoutes from './routes/testimonials.routes.js'
+import productratingRoutes from './routes/productsrating.routes.js'
+import resendEmailRoutes from './routes/resendemail.js'
+import inventoryRouter from './routes/inventory.routes.js'
+import analyticsRoutes from './routes/analytics.routes.js'
+import getAllTimeMetricsRoutes from './routes/salesmetrics.routes.js'
 
 app.use(globalErrorHandler);
 app.use("/api/products", UserRouter);
@@ -65,9 +71,22 @@ app.use("/api/upload", uploadRouter);
 
 app.use("/api/category", categoryRouter);
 
-app.use("/api/customers",customersRoutes);
+app.use("/api/customers", customersRoutes);
 
-app.use("/api/orders",orderRoutes);
+app.use("/api/orders", orderRoutes);
+
+app.use("/api/reviews", productratingRoutes);
+
+app.use("/api/testimonials", testimonialsRoutes);
+
+
+app.use("/api/send", resendEmailRoutes);
+
+app.use("/api/inventory", inventoryRouter);
+
+app.use("/api/analytics", analyticsRoutes);
+
+app.use("/api/sales", getAllTimeMetricsRoutes);
 
 // Add error handler
 

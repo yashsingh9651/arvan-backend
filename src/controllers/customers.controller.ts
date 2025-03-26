@@ -47,42 +47,32 @@ const allCustomers = async (
           orderBy: {
             createdAt: "desc",
           },
-        },
-      },
-    });
+        }
 
-    const formattedCustomers = customers.map((customer) => {
-      const totalOrders = customer.Order.length;
-      const totalSpent = customer.Order.reduce(
-        (sum, order) => sum + order.total,
-        0
-      );
-      const lastOrder = customer.Order[0]?.createdAt || null;
-
-      return {
-        id: customer.id,
-        name: customer.name || "N/A",
-        mobile_no: customer.mobile_no,
-        totalOrders,
-        totalSpent,
-        lastOrder,
-      };
-    });
-
-    res.json({ success: true, data: formattedCustomers });
-  } catch (error) {
-    console.error("Error fetching customers:", error);
-    throw new RouteError(
-      HttpStatusCodes.INTERNAL_SERVER_ERROR,
-      "Failed to fetch customers"
-    );
-  }
-};
-const updatecustomer = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+      }})
+  
+      const formattedCustomers = customers.map((customer: { Order: any[]; id: any; name: any; mobile_no: any; }) => {
+        const totalOrders = customer.Order.length;
+        const totalSpent = customer.Order.reduce((sum, order) => sum + order.total, 0);
+        const lastOrder = customer.Order[0]?.createdAt || null;
+  
+        return {
+          id: customer.id,
+          name: customer.name || "N/A",
+         mobile_no: customer.mobile_no,
+          totalOrders,
+          totalSpent,
+          lastOrder,
+        };
+      });
+  
+      res.json({ success: true, data: formattedCustomers });
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+      throw new RouteError(HttpStatusCodes.INTERNAL_SERVER_ERROR, "Failed to fetch customers");
+    }
+  };
+ const updatecustomer = async(req:Request, res:Response, next:NextFunction) => {
   const { id } = req.user;
 
   if (!id) {
@@ -115,7 +105,6 @@ const addAddress = async (req: Request, res: Response, next: NextFunction) => {
   if (!id) {
     throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing customer id");
   }
-
   // const { address } = req.body;
   const parsedData = addAddressSchema.safeParse(req.body);
 
@@ -452,6 +441,34 @@ const forgotPassword = async (
     },
   });
   res.status(HttpStatusCodes.OK).json({ success: true, message: "Password updated successfully" });
+};
+
+const makeAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  const { mobile_no } = req.body;
+
+  const user = await prisma.user.findUnique({
+    where: {
+      mobile_no: mobile_no,
+    },
+  });
+
+  if (!user) {
+    throw new RouteError(HttpStatusCodes.BAD_REQUEST, "User not found");
+  }
+
+  if ( user.role === "ADMIN") {
+    throw new RouteError(HttpStatusCodes.BAD_REQUEST, "User is already an admin");
+  }
+
+  await prisma.user.update({
+    where: {
+      mobile_no: mobile_no,
+    },
+    data: {
+      role: "ADMIN",
+    },
+  });
+  res.status(HttpStatusCodes.OK).json({ success: true, message: "User is now an admin" });
 };
 
 export default {

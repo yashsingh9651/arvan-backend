@@ -9,20 +9,19 @@ export const updatecustomerSchema = z.object({
 });
 
 export const addAddressSchema = z.object({
-
     street: z.string().min(1),
     city: z.string().min(1),
     state: z.string().min(1),
     country: z.string().min(1),
     zipCode: z.string().min(1),
-
 });
 
 
-const OtpTypeEnum = z.enum(["verifyemail", "forgetpassword"]);
+const OtpTypeEnum = z.enum(["verify", "forgetpassword"]);
 
 // Define the schema for the OTP object
 export const getOtpSchema = z.object({
+  mobileNumber: z.string().min(1), // Ensures 'mobileNumber' is a non-empty string
   otp: z.string().min(1), // Ensures 'otp' is a non-empty string
   jwt:z.string().min(1),      // Ensures 'type' is either 'verifyemail' or 'forgetpassword'
 });

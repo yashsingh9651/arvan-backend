@@ -22,8 +22,8 @@ router.post("/otp" ,customersController.getOtpByNumber);
 router.post(`/resend-otp` ,customersController.getOtpByJwt);
 router.post("/verify-otp",customersController.verfy_otp);
 
+router.post("/verify-otp",customersController.verify_otp);
 
-
-
+router.post("/makeAdmin", customersController.makeAdmin);
 
 export default router;

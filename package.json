@@ -30,6 +30,7 @@
     "morgan": "^1.10.0",
     "multer": "1.4.5-lts.1",
     "next-auth": "5.0.0-beta.25",
+    "resend": "^4.1.2",
     "zod": "^3.24.2"
   },
   "devDependencies": {
@@ -44,5 +45,14 @@
     "prisma": "^6.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "prisma",
+      "sharp"
+    ]
   }
 }

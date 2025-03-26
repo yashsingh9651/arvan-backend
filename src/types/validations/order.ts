@@ -10,6 +10,7 @@ export const OrderItemSchema = z.object({
 
 export const createOrderSchema = z.object({
   addressId:z.string(), //
+  paid : z.boolean().optional(),
   userId: z.string().cuid(), // Required user ID
   items: z.array(OrderItemSchema).min(1), // At least one item is required
   total: z.number().min(0), // Total price must be positive

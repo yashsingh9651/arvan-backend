@@ -23,7 +23,7 @@ const addProduct = async (req: Request, res: Response, next: NextFunction) => {
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
   }
-  const { name, description, price, category_id, assets, material } =
+  const { name, description, price,discountPrice, category_id, assets, material, status } =
     parsed.data;
 
   const product = await prisma.product.create({
@@ -31,8 +31,10 @@ const addProduct = async (req: Request, res: Response, next: NextFunction) => {
       name,
       description,
       price,
+      discountPrice: discountPrice || null,
       category_id,
       material,
+      status,
       assets: {
         create:
           assets?.map((asset: { url: string; type: AssetType }) => ({
@@ -50,9 +52,7 @@ const addProduct = async (req: Request, res: Response, next: NextFunction) => {
 
 /** ✅ Add a color to an existing product */
 const addColor = async (req: Request, res: Response, next: NextFunction) => {
-  // if(!req.user && req?.user?.role !== "ADMIN"){
-  //   throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  // }
+
   const parsed = addColorSchema.safeParse(req.body);
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
@@ -91,9 +91,6 @@ const addColor = async (req: Request, res: Response, next: NextFunction) => {
 
 /** ✅ Add sizes & stock to a color */
 const addSizes = async (req: Request, res: Response, next: NextFunction) => {
-  if(!req.user && req?.user?.role !== "ADMIN"){
-    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  }
   const parsed = addSizesSchema.safeParse(req.body);
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
@@ -118,11 +115,54 @@ const addSizes = async (req: Request, res: Response, next: NextFunction) => {
   res.status(HttpStatusCodes.CREATED).json({ success: true, variants });
 };
 
+/** ✅ Update a color */
+const updateColor = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.params;
+  const parsed = addColorSchema.safeParse(req.body);
+  if (!parsed.success) {
+    throw new ValidationErr(parsed.error.errors);
+  }
+  const { color, assets, sizes } = parsed.data;
+
+  // First, delete all existing assets and sizes for this color
+  await prisma.$transaction([
+    prisma.productAsset.deleteMany({
+      where: { colorId: id }
+    }),
+    prisma.productVariant.deleteMany({
+      where: { colorId: id }
+    })
+  ]);
+
+  // Then update the color with new assets and sizes
+  const productColor = await prisma.productColor.update({
+    where: { id },
+    data: {
+      color,
+      assets: {
+        create:
+          assets?.map((asset: { url: string; type: AssetType }) => ({
+            asset_url: asset.url,
+            type: asset.type,
+          })) || [],
+      },
+      sizes: {
+        create:
+          sizes?.map((asset: { size: VariantsValues; stock: number }) => ({
+            size: asset.size,
+            stock: asset.stock,
+          })) || [],
+      }
+    },
+    include: { assets: true, sizes: true },
+  });
+
+  res.status(HttpStatusCodes.OK).json({ success: true, productColor });
+};
+
 /** ✅ Update stock for a specific size */
 const updateStock = async (req: Request, res: Response, next: NextFunction) => {
-  if(!req.user && req?.user?.role !== "ADMIN"){
-    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  }
+  
   const parsed = updateStockSchema.safeParse(req.body);
   if (!parsed.success) {
     throw new ValidationErr(parsed.error.errors);
@@ -139,9 +179,7 @@ const updateStock = async (req: Request, res: Response, next: NextFunction) => {
 
 /** ✅ Delete an asset */
 const deleteAsset = async (req: Request, res: Response, next: NextFunction) => {
-  if(!req.user && req?.user?.role !== "ADMIN"){
-    throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  }
+  
   const { id } = req.params;
   if (!id) {
     throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing asset id");
@@ -193,22 +231,59 @@ const getAllProduct = async (
   res: Response,
   next: NextFunction
 ) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const search = (req.query.search as string) || '';
+  const status = req.query.status as "PUBLISHED" | "DRAFT" | undefined;
+  
+  const skip = (page - 1) * limit;
+  
+  const totalCount = await prisma.product.count({
+    where: {
+      OR: [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
+      ],
+      ...(status && { status })
+    }
+  });
+  
+  const totalPages = Math.ceil(totalCount / limit);
+  
   const products = await prisma.product.findMany({
+    where: {
+      OR: [
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
+      ],
+      ...(status && { status })
+    },
     include: {
       assets: true,
     },
+    skip,
+    take: limit,
   });
-  res.status(HttpStatusCodes.OK).json({ success: true, products });
+  
+  res.status(HttpStatusCodes.OK).json({ 
+    success: true, 
+    products,
+    pagination: {
+      totalPages,
+      currentPage: page,
+      totalItems: totalCount,
+      itemsPerPage: limit
+    }
+  });
 };
+
+
 
 const updateProduct = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  // if(!req.user && req?.user?.role !== "ADMIN"){
-  //   throw new RouteError(HttpStatusCodes.UNAUTHORIZED, "Unauthorized");
-  // }
   const { id } = req.params;
 
   if (!id) {
@@ -225,14 +300,39 @@ const updateProduct = async (
     throw new RouteError(HttpStatusCodes.NOT_FOUND, "Product not found");
   }
 
+  const { name, description, price, discountPrice, category_id, material, assets, status } = parsed.data;
+
+  // First, delete existing assets if new ones are provided
+  if (assets && assets.length > 0) {
+    await prisma.productAsset.deleteMany({
+      where: { 
+        productId: id,
+        colorId: null 
+      }
+    });
+  }
+
+  // Update the product with all fields
   const updatedProduct = await prisma.product.update({
     where: { id },
     data: {
-      name: parsed.data.name,
-      description: parsed.data.description,
-      price: parsed.data.price,
-      material: parsed.data.material,
+      name,
+      description,
+      price,
+      discountPrice,
+      category_id,
+      material,
+      status,
+      assets: assets ? {
+        create: assets.map((asset: { url: string; type: AssetType }) => ({
+          asset_url: asset.url,
+          type: asset.type,
+        }))
+      } : undefined
     },
+    include: {
+      assets: true
+    }
   });
 
   res.status(HttpStatusCodes.OK).json({ success: true, updatedProduct });
@@ -315,11 +415,50 @@ const deleteProduct = async (req: Request, res: Response, next: NextFunction) =>
   res.status(HttpStatusCodes.OK).json({ success: true, message: "Product variant deleted" });
 };
 
+const getOverview = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+      const [totalProducts, totalRevenue, lastMonthRevenue, totalUsers] = await Promise.all([
+          prisma.product.count({ where: { status: "PUBLISHED" } }),
+          prisma.order.aggregate({ _sum: { total: true }, where: { status: 'COMPLETED' } }),  
+          prisma.order.aggregate({ 
+              _sum: { total: true }, 
+              where: { 
+                  createdAt: { gte: oneMonthAgo },
+                  status: 'COMPLETED'
+              }
+          }),
+          prisma.user.count() 
+          ]);
+
+      const totalRevenueValue = totalRevenue._sum.total || 0;
+      const lastMonthRevenueValue = lastMonthRevenue._sum.total || 0;
+
+      let growthPercentage = "0%";
+      if (totalRevenueValue > 0) {
+          growthPercentage = ((lastMonthRevenueValue / totalRevenueValue) * 100).toFixed(1) + "%";
+      }
+
+      res.status(200).json({
+          totalProducts,
+          revenue: totalRevenueValue,
+          growth: growthPercentage,
+          usersCount: totalUsers
+      });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Error fetching product overview" });
+  }
+};
+
 export default {
   addProduct,
   addColor,
   addSizes,
   updateStock,
+  updateColor,
   deleteAsset,
   getProduct,
   getAllProduct,
@@ -327,5 +466,6 @@ export default {
   updateStatus,
   deleteProduct,
   deleteColor,
-  deleteVariant
+  deleteVariant,
+  getOverview
 };
