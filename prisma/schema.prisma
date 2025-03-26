@@ -15,6 +15,7 @@ model Product {
   discountPrice Float?
   material      String
   category_id   String
+    category      Category     @relation(fields: [category_id], references: [id])
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   status        ProductStatus  @default(DRAFT)
@@ -61,6 +62,8 @@ model Category {
   productCount Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  Product Product[]
 }
 
 enum ProductStatus {
