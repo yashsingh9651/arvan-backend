@@ -22,7 +22,8 @@ model Product {
   colors        ProductColor[]
   assets        ProductAsset[]
   ProductRating  ProductRating[]
-
+  ProductPerformance ProductPerformance[]
+  sales         SalesSummary[]
 }
 
 model ProductColor {
@@ -265,5 +266,23 @@ model SalesSummary {
   salesGrowth    Float
   totalOrders    Int
   newCustomers   Int
+
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model ProductPerformance {
+  id           String   @id @default(uuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  date         DateTime @default(now())
+  revenue      Decimal  @default(0.0) 
+  orders       Int      @default(0)
+  rating       Float?  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([productId, date]) // Ensures one record per product per day
+  @@index([date]) // Adds an index on the 'date' field
 }
 

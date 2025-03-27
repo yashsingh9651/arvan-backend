@@ -29,7 +29,7 @@ const getAllTimeMetrics = async (
         : 0;
 
     res.json({
-      totalRevenue: totalRevenue._sum.total || 100,
+      totalRevenue: totalRevenue._sum.total || 0,
       totalOrders,
       newCustomers,
       salesGrowth,

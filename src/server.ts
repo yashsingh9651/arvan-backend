@@ -62,6 +62,7 @@ import resendEmailRoutes from './routes/resendemail.js'
 import inventoryRouter from './routes/inventory.routes.js'
 import analyticsRoutes from './routes/analytics.routes.js'
 import getAllTimeMetricsRoutes from './routes/salesmetrics.routes.js'
+import productPerformanceRouter from './routes/productperformance.routes.js'
 
 app.use(globalErrorHandler);
 app.use("/api/products", UserRouter);
@@ -87,6 +88,8 @@ app.use("/api/inventory", inventoryRouter);
 app.use("/api/analytics", analyticsRoutes);
 
 app.use("/api/sales", getAllTimeMetricsRoutes);
+
+app.use("/api/productperformance", productPerformanceRouter);
 
 // Add error handler
 
