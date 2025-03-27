@@ -116,6 +116,7 @@ export const authenticateJWT = async (
    
     console.log("Authenticating JWT");
     console.log(req.cookies);
+    let red_flag = false;
 
     let sessionToken =
     (req.headers.authorization ? req.headers.authorization.split(' ')[1] : undefined);
@@ -125,6 +126,7 @@ export const authenticateJWT = async (
     }
     if (!sessionToken) {
       sessionToken = req.cookies["__Secure-next-auth.session-token"];
+      red_flag = true;
     }
 
     console.log(sessionToken);
@@ -137,7 +139,7 @@ export const authenticateJWT = async (
       secret: ENV.AUTH_SECRET,
       salt:
       ENV.NODE_ENV === "production"
-        ? "__Secure-authjs.session-token"
+        ? red_flag ? "__Secure-next-auth.session-token" : "__Secure-authjs.session-token"
         : "authjs.session-token",
 
     });
