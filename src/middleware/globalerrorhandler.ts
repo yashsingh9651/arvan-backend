@@ -117,8 +117,15 @@ export const authenticateJWT = async (
     console.log("Authenticating JWT");
     console.log(req.cookies);
 
-    const sessionToken =
+    let sessionToken =
     (req.headers.authorization ? req.headers.authorization.split(' ')[1] : undefined);
+
+    if (!sessionToken) {
+      sessionToken = req.cookies["__Secure-authjs.session-token"];
+    }
+    if (!sessionToken) {
+      sessionToken = req.cookies["__Secure-next-auth.session-token"];
+    }
 
     console.log(sessionToken);
     if (!sessionToken) {

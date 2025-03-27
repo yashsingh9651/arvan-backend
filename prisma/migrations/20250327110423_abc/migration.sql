@@ -1,4 +1,5 @@
-
+-- CreateEnum
+CREATE TYPE "ProductStatus" AS ENUM ('DRAFT', 'PUBLISHED');
 
 -- CreateEnum
 CREATE TYPE "AssetType" AS ENUM ('IMAGE', 'VIDEO');
@@ -90,6 +91,33 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "Address" (
+    "id" TEXT NOT NULL,
+    "street" TEXT NOT NULL,
+    "city" TEXT NOT NULL,
+    "state" TEXT NOT NULL,
+    "country" TEXT NOT NULL,
+    "zipCode" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Address_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Otp" (
+    "id" TEXT NOT NULL,
+    "otp" TEXT NOT NULL,
+    "userphone" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "jwt" TEXT,
+
+    CONSTRAINT "Otp_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Account" (
     "userId" TEXT NOT NULL,
     "type" TEXT NOT NULL,
@@ -114,7 +142,9 @@ CREATE TABLE "Order" (
     "userId" TEXT NOT NULL,
     "total" DOUBLE PRECISION NOT NULL,
     "status" "OrderStatus" NOT NULL,
+    "paid" BOOLEAN NOT NULL DEFAULT false,
     "fulfillment" "OrderFulfillment" NOT NULL,
+    "addressId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -167,7 +197,7 @@ CREATE TABLE "ProductRating" (
 
 -- CreateTable
 CREATE TABLE "Testimonial" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "role" TEXT NOT NULL,
     "description" TEXT NOT NULL,
@@ -179,11 +209,49 @@ CREATE TABLE "Testimonial" (
     CONSTRAINT "Testimonial_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "ContactForm" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "Status" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ContactForm_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "SalesSummary" (
+    "id" TEXT NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "totalRevenue" DOUBLE PRECISION NOT NULL,
+    "salesGrowth" DOUBLE PRECISION NOT NULL,
+    "totalOrders" INTEGER NOT NULL,
+    "newCustomers" INTEGER NOT NULL,
+
+    CONSTRAINT "SalesSummary_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_mobile_no_key" ON "User"("mobile_no");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Otp_otp_key" ON "Otp"("otp");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Otp_userphone_key" ON "Otp"("userphone");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "SalesSummary_date_key" ON "SalesSummary"("date");
+
+-- AddForeignKey
+ALTER TABLE "Product" ADD CONSTRAINT "Product_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ProductColor" ADD CONSTRAINT "ProductColor_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -198,10 +266,19 @@ ALTER TABLE "ProductAsset" ADD CONSTRAINT "ProductAsset_productId_fkey" FOREIGN 
 ALTER TABLE "ProductAsset" ADD CONSTRAINT "ProductAsset_colorId_fkey" FOREIGN KEY ("colorId") REFERENCES "ProductColor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Address" ADD CONSTRAINT "Address_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Otp" ADD CONSTRAINT "Otp_userphone_fkey" FOREIGN KEY ("userphone") REFERENCES "User"("mobile_no") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Account" ADD CONSTRAINT "Account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Order" ADD CONSTRAINT "Order_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "Address"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "OrderItem" ADD CONSTRAINT "OrderItem_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order"("id") ON DELETE CASCADE ON UPDATE CASCADE;
