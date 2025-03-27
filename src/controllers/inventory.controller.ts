@@ -1,12 +1,11 @@
 import { NextFunction, Request, Response } from 'express';
-import { RouteError, ValidationErr } from '../common/routeerror.js';
 import { prisma } from "../utils/prismaclient.js";
 import HttpStatusCodes from '../common/httpstatuscode.js';
 import { ProductStatus } from '@prisma/client';
 
 const getOverview = async (req: Request, res: Response, next: NextFunction) => {
     const [products, productVariants] = await Promise.all([
-        prisma.product.count({ where: { status: ProductStatus.PUBLISHED } }),
+        prisma.product.count(),
         prisma.productVariant.findMany({
             select: {
                 stock: true,
@@ -56,7 +55,7 @@ const getInventory = async (req: Request, res: Response, next: NextFunction) => 
         // Fetch paginated products and total count in parallel
         const [products, totalProducts, productStocks] = await Promise.all([
             prisma.product.findMany({
-                where: { status: ProductStatus.PUBLISHED, ...searchFilter },
+                where: { ...searchFilter },
                 skip,
                 take: limitNum,
                 orderBy: { createdAt: 'desc' },
