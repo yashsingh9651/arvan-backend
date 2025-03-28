@@ -114,8 +114,6 @@ export const authenticateJWT = async (
 
   try {
    
-    console.log("Authenticating JWT");
-    console.log(req.cookies);
     let red_flag = false;
 
     let sessionToken =
@@ -129,7 +127,6 @@ export const authenticateJWT = async (
       red_flag = true;
     }
 
-    console.log(sessionToken);
     if (!sessionToken) {
       throw new RouteError(403, "Unauthorized: No token found");
     }
@@ -143,7 +140,6 @@ export const authenticateJWT = async (
         : "authjs.session-token",
 
     });
-    console.log(decodedToken);
 
     if (!decodedToken) {
       throw new RouteError(403, "Unauthorized: Invalid token");
