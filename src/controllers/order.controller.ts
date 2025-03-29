@@ -51,12 +51,12 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
       },
     });
 
-    // await orderProcessed(
-    //   req.user.name,
-    //   Produts_items[0].color.product.name,
-    //   "ARVAN",
-    //   req.user.mobile_no,
-    // )
+    await orderProcessed(
+      req.user.name,
+      Produts_items[0].color.product.name,
+      "ARVAN",
+      req.user.mobile_no,
+    )
   res.status(HttpStatusCodes.CREATED).json({ success: true, order });
 };
 
