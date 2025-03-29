@@ -82,14 +82,11 @@ const allCustomers = async (
   const partialCustomer = updatecustomerSchema.partial();
   const customer = partialCustomer.safeParse(req.body);
 
+
   if (!customer.success) {
     throw new ValidationErr(customer.error.errors);
   }
 
-  if (customer.data.password) {
-    const salt = await bcryptjs.genSalt(10);
-    customer.data.password = await bcryptjs.hash(customer.data.password, salt);
-  }
 
   const updatedCustomer = await prisma.user.update({
     where: { id },
@@ -99,6 +96,27 @@ const allCustomers = async (
   res.status(HttpStatusCodes.OK).json({ success: true, updatedCustomer });
 };
 
+
+const getCustomer = async (req: Request, res: Response, next: NextFunction) => {
+  const { id } = req.user;
+
+  if (!id) {
+    throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing customer id");
+  }
+
+  const customer = await prisma.user.findUnique({
+    where: { id },
+    select:{
+      id: true,
+      name: true,
+      mobile_no: true,
+      email: true
+    
+    }})
+
+  res.status(HttpStatusCodes.OK).json({ success: true, customer });
+
+}
 const addAddress = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.user;
 
@@ -111,6 +129,7 @@ const addAddress = async (req: Request, res: Response, next: NextFunction) => {
   if (!parsedData.success) {
     throw new ValidationErr(parsedData.error.errors);
   }
+  console.log(parsedData.data);
 
   const addressCreate = await prisma.address.create({
     data: {
@@ -481,7 +500,8 @@ export default {
   getOtpByJwt,
   forgotPassword,
   verfy_otp,
-  makeAdmin
+  makeAdmin,
+  getCustomer,
 
 
 };
