@@ -5,7 +5,7 @@ import { authenticateJWT } from "../middleware/globalerrorhandler.js";
 const router = Router();
 
 // 🛒 Create a new order
-router.post("/", orderController.createOrder);
+router.post("/",authenticateJWT, orderController.createOrder);
 
 // 📦 Get all orders (Admin gets all, User gets only their orders)
 router.get("/",authenticateJWT, orderController.getAllOrders);

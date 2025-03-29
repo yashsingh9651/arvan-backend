@@ -5,8 +5,6 @@ export const ShipRocketOrderSchema = z.object({
   order_id: z.string(),
   order_date: z.string(),
   pickup_location: z.string(),
-  channel_id: z.string(),
-  comment: z.string(),
   billing_customer_name: z.string().nullable(),
   billing_address: z.string().nullable(),
   billing_city: z.string().nullable(),

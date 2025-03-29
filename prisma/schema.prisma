@@ -286,3 +286,9 @@ model ProductPerformance {
   @@index([date]) // Adds an index on the 'date' field
 }
 
+
+model ShiprocketToken {
+  id     Int      @id @default(1)
+  token  String
+  createdAt DateTime @default(now())
+}
