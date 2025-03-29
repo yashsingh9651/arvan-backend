@@ -5,7 +5,8 @@ export const updatecustomerSchema = z.object({
   name: z.string().min(1),
   mobile_no: z.string().min(1),
   image: z.string().min(1),
-  password: z.string().min(1),
+  email: z.string().email(),
+ 
 });
 
 export const addAddressSchema = z.object({
