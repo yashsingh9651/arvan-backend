@@ -49,16 +49,50 @@ const getAllOrders = async (req: Request, res: Response, next: NextFunction) => 
   const limit = parseInt(req.query.limit as string) || 10;
   const page = parseInt(req.query.page as string) || 1;
   const skip = (page - 1) * limit;
+  const search = req.query.search as string || "";
 
+  // Build the where clause
+  const whereClause: any = req.user.role === "ADMIN" ? {} : { userId: req.user.id };
+  
+  // Add search functionality if search term is provided
+  if (search) {
+    whereClause.OR = [
+      { id: { contains: search, mode: 'insensitive' } },
+      { userId: { contains: search, mode: 'insensitive' } }
+    ];
+  }
+
+  // Get orders with pagination
   const orders = await prisma.order.findMany({
-    where: req.user.role === "ADMIN" ? {} : { userId: req.user.id }, // Admin gets all orders, user gets only their orders
+    where: whereClause,
     include: { items: true },
     take: limit,
     skip: skip,
+    orderBy: { createdAt: 'desc' } // Most recent orders first
   });
 
-  res.status(HttpStatusCodes.OK).json({ success: true, orders });
+  // Get total count for pagination
+  const totalItems = await prisma.order.count({
+    where: whereClause
+  });
+
+  const totalPages = Math.ceil(totalItems / limit);
+
+  res.status(HttpStatusCodes.OK).json({
+    success: true,
+    orders,
+    pagination: {
+      totalPages,
+      currentPage: page,
+      totalItems,
+      itemsPerPage: limit
+    }
+  });
 };
+
+
+
+
 /** ✅ Get a single order by ID */
 const getOrderById = async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
