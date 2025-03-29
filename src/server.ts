@@ -63,6 +63,7 @@ import inventoryRouter from './routes/inventory.routes.js'
 import analyticsRoutes from './routes/analytics.routes.js'
 import getAllTimeMetricsRoutes from './routes/salesmetrics.routes.js'
 import productPerformanceRouter from './routes/productperformance.routes.js'
+import shipRocketRoutes from './routes/shipRocket.routes.js'
 
 app.use(globalErrorHandler);
 app.use("/api/products", UserRouter);
@@ -90,6 +91,8 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/sales", getAllTimeMetricsRoutes);
 
 app.use("/api/productperformance", productPerformanceRouter);
+
+app.use("/api/shiprocket", authenticateJWT, shipRocketRoutes);
 
 // Add error handler
 

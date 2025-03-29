@@ -9,6 +9,7 @@ import {
 } from "../types/validations/order.js";
 
 import { prisma } from "../utils/prismaclient.js";
+import { orderProcessed } from "../utils/whatsappclient.js";
 
 /** ✅ Create a new order */
 const createOrder = async (req: Request, res: Response, next: NextFunction) => {
@@ -37,6 +38,25 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
       },
       include: { items: true },
     });
+
+    // Get all items details
+    const Produts_items = await prisma.productVariant.findMany({
+      where: { id: { in: order.items.map((item) => item.productVariantId) } },
+      include: {
+        color: {
+          include: {
+            product: true,
+          },
+        },
+      },
+    });
+
+    // await orderProcessed(
+    //   req.user.name,
+    //   Produts_items[0].color.product.name,
+    //   "ARVAN",
+    //   req.user.mobile_no,
+    // )
   res.status(HttpStatusCodes.CREATED).json({ success: true, order });
 };
 
