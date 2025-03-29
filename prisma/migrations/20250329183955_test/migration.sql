@@ -82,6 +82,9 @@ CREATE TABLE "User" (
     "isPhoneNoVerified" BOOLEAN NOT NULL DEFAULT false,
     "phoneNoVerified" TIMESTAMP(3),
     "image" TEXT,
+    "email" TEXT,
+    "isEmailVerified" BOOLEAN NOT NULL DEFAULT false,
+    "emailVerified" TIMESTAMP(3),
     "password" TEXT,
     "role" "UserType" NOT NULL DEFAULT 'USER',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -231,12 +234,39 @@ CREATE TABLE "SalesSummary" (
     "salesGrowth" DOUBLE PRECISION NOT NULL,
     "totalOrders" INTEGER NOT NULL,
     "newCustomers" INTEGER NOT NULL,
+    "productId" TEXT NOT NULL,
 
     CONSTRAINT "SalesSummary_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "ProductPerformance" (
+    "id" TEXT NOT NULL,
+    "productId" TEXT NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "revenue" DECIMAL(65,30) NOT NULL DEFAULT 0.0,
+    "orders" INTEGER NOT NULL DEFAULT 0,
+    "rating" DOUBLE PRECISION,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "ProductPerformance_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ShiprocketToken" (
+    "id" INTEGER NOT NULL DEFAULT 1,
+    "token" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ShiprocketToken_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_mobile_no_key" ON "User"("mobile_no");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Otp_otp_key" ON "Otp"("otp");
@@ -249,6 +279,12 @@ CREATE UNIQUE INDEX "Session_sessionToken_key" ON "Session"("sessionToken");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "SalesSummary_date_key" ON "SalesSummary"("date");
+
+-- CreateIndex
+CREATE INDEX "ProductPerformance_date_idx" ON "ProductPerformance"("date");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ProductPerformance_productId_date_key" ON "ProductPerformance"("productId", "date");
 
 -- AddForeignKey
 ALTER TABLE "Product" ADD CONSTRAINT "Product_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -294,3 +330,9 @@ ALTER TABLE "ProductRating" ADD CONSTRAINT "ProductRating_userId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "ProductRating" ADD CONSTRAINT "ProductRating_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SalesSummary" ADD CONSTRAINT "SalesSummary_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProductPerformance" ADD CONSTRAINT "ProductPerformance_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE CASCADE ON UPDATE CASCADE;
