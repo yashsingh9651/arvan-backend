@@ -18,7 +18,7 @@ export const ShipRocketOrderSchema = z.object({
       name: z.string(),
       sku: z.string(),
       units: z.number(),
-      selling_price: z.number(),
+      selling_price: z.string(),
       hsn: z.string(),
     })
   ),
