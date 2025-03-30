@@ -3,9 +3,13 @@ import { OrderFulfillment, OrderStatus } from "@prisma/client";
 
 
 export const OrderItemSchema = z.object({
-  productVariantId: z.string().cuid(), // Only the productVariantId is required in input
-  quantity: z.number().int().min(1), // Quantity must be at least 1
-  priceAtOrder: z.number().min(0), // Store price at the time of order
+  productVariantId: z.string().cuid(),
+  quantity: z.number().int().min(1),
+  priceAtOrder: z.number().min(0),
+  color: z.string(),
+  productImage: z.string(),
+  productName: z.string(),
+  size: z.string(),
 });
 
 export const createOrderSchema = z.object({
