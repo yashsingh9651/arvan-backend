@@ -10,13 +10,14 @@ export const updatecustomerSchema = z.object({
 });
 
 export const addAddressSchema = z.object({
-    street: z.string().min(1),
-    city: z.string().min(1),
-    state: z.string().min(1),
-    country: z.string().min(1),
-    zipCode: z.string().min(1),
+  name: z.string().min(2, { message: "Full name is required" }),
+  phone: z.string().min(10, { message: "Valid phone number is required" }),
+  street: z.string().min(3, { message: "Street address is required" }),
+  city: z.string().min(2, { message: "City is required" }),
+  state: z.string().min(2, { message: "State is required" }),
+  country: z.string().min(2, { message: "Country is required" }),
+  zipCode: z.string().min(5, { message: "Valid zip code is required" }),
 });
-
 
 const OtpTypeEnum = z.enum(["verify", "forgetpassword"]);
 

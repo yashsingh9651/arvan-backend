@@ -7,7 +7,7 @@ const router = Router();
 //fix routes
 router.get("/allcustomers", customersController.allCustomers);
 
-router.put("/customer", authenticateJWT,customersController.updatecustomer);
+router.put("/customer/:addressId", authenticateJWT,customersController.updatecustomer);
 router.get("/customer", authenticateJWT,customersController.getCustomer);
 
 
