@@ -33,6 +33,10 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
             productVariantId: item.productVariantId,
             quantity: item.quantity,
             priceAtOrder: item.priceAtOrder,
+            color: item.color,
+            productImage: item.productImage,
+            productName: item.productName,
+            size: item.size,
           })),
         },
       },
@@ -40,26 +44,16 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
     });
 
     // Get all items details
-    const Produts_items = await prisma.productVariant.findMany({
-      where: { id: { in: order.items.map((item) => item.productVariantId) } },
-      include: {
-        color: {
-          include: {
-            product: true,
-          },
-        },
-      },
-    });
 
     await orderProcessed(
       req.user.name,
-      Produts_items[0].color.product.name,
+      items[0].productName,
       "ARVAN",
       req.user.mobile_no,
     )
   res.status(HttpStatusCodes.CREATED).json({ success: true, order });
 };
-
+/** ✅ Get all orders (Admin) */
 /** ✅ Get all orders (Admin) */
 const getAllOrders = async (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) {
@@ -85,11 +79,28 @@ const getAllOrders = async (req: Request, res: Response, next: NextFunction) => 
   // Get orders with pagination
   const orders = await prisma.order.findMany({
     where: whereClause,
-    include: { items: true },
+    include: { 
+      items: true // Include all OrderItem fields directly
+    },
     take: limit,
     skip: skip,
     orderBy: { createdAt: 'desc' } // Most recent orders first
   });
+
+  // No need for complex formatting since the OrderItem already contains all needed fields
+  const formattedOrders = orders.map(order => ({
+    ...order,
+    items: order.items.map(item => ({
+      id: item.id,
+      quantity: item.quantity,
+      priceAtOrder: item.priceAtOrder,
+      size: item.size,
+      color: item.color,
+      productVariantId: item.productVariantId,
+      productName: item.productName,
+      productImage: item.productImage,
+    })),
+  }));
 
   // Get total count for pagination
   const totalItems = await prisma.order.count({
@@ -100,7 +111,7 @@ const getAllOrders = async (req: Request, res: Response, next: NextFunction) => 
 
   res.status(HttpStatusCodes.OK).json({
     success: true,
-    orders,
+    orders: formattedOrders,
     pagination: {
       totalPages,
       currentPage: page,
@@ -109,9 +120,6 @@ const getAllOrders = async (req: Request, res: Response, next: NextFunction) => 
     }
   });
 };
-
-
-
 
 /** ✅ Get a single order by ID */
 const getOrderById = async (req: Request, res: Response, next: NextFunction) => {

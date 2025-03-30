@@ -190,9 +190,12 @@ model OrderItem {
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
   productVariantId String
   quantity         Int
-  priceAtOrder     Float // Store price at the time of order
+  priceAtOrder     Float
+  color            String
+  productImage     String
+  productName      String
+  size             String
 }
-
 enum OrderStatus {
   PENDING
   COMPLETED
