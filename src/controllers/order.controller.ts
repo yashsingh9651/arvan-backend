@@ -20,6 +20,7 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
   }
     const { userId, items, total, addressId ,paid} = parsed.data;
 
+
     const order = await prisma.order.create({
       data: {
         userId,
@@ -30,6 +31,7 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
         fulfillment: OrderFulfillment.PENDING,
         items: {
           create: items.map((item) => ({
+            productId: item.productId,
             productVariantId: item.productVariantId,
             quantity: item.quantity,
             priceAtOrder: item.priceAtOrder,
@@ -53,7 +55,6 @@ const createOrder = async (req: Request, res: Response, next: NextFunction) => {
     )
   res.status(HttpStatusCodes.CREATED).json({ success: true, order });
 };
-/** ✅ Get all orders (Admin) */
 /** ✅ Get all orders (Admin) */
 const getAllOrders = async (req: Request, res: Response, next: NextFunction) => {
   if (!req.user) {
@@ -91,7 +92,7 @@ const getAllOrders = async (req: Request, res: Response, next: NextFunction) => 
   const formattedOrders = orders.map(order => ({
     ...order,
     items: order.items.map(item => ({
-      id: item.id,
+      id: item.productId,
       quantity: item.quantity,
       priceAtOrder: item.priceAtOrder,
       size: item.size,
@@ -132,14 +133,55 @@ const getOrderById = async (req: Request, res: Response, next: NextFunction) => 
       throw new RouteError(HttpStatusCodes.BAD_REQUEST, "Missing order ID");
     }
   
-    const order = await prisma.order.findUnique({
-      where: req.user.role === "ADMIN" ? { id } : { id, userId: req.user.id }, // Admin can fetch any order, user can only fetch their own
-      include: { items: true },
-    });
+    // const order = await prisma.order.findUnique({
+    //   where: req.user.role === "ADMIN" ? { id } : { id, userId: req.user.id }, // Admin can fetch any order, user can only fetch their own
+    //   include: { items: true },
+    // });
   
-    if (!order) {
-      throw new RouteError(HttpStatusCodes.NOT_FOUND, "Order not found");
-    }
+    // if (!order) {
+    //   throw new RouteError(HttpStatusCodes.NOT_FOUND, "Order not found");
+    // }
+    const myOrder = await prisma.order.findUnique({
+      where: { id },
+      include: { items: true, address: true },
+    });
+
+    const order = {
+      status: myOrder?.DeliveryStatus,
+      message: myOrder?.etd ? `Expected Delivery On ${myOrder?.etd.slice(0,10)}` : "Order is being processed",
+      color: "bg-yellow-500",
+      actions: myOrder?.status === "COMPLETED" ? [] : ["Cancel Order"],
+      awb: myOrder?.awb,
+      products: myOrder?.items.map((item) => ({
+        id: item.productId,
+        productName: item.productName,
+        size: item.size,
+        quantity: item.quantity,
+        productColor: item.color,
+        price: item.priceAtOrder,
+        image: item.productImage,
+      })),
+      totalPrice: myOrder?.total,
+      orderDate: myOrder?.createdAt.toISOString().slice(0, 10),
+      orderId: id,
+      paymentMethod: myOrder?.paid ? "Cash on Delivery" : "RAZORPAY",
+      shippingAddress : {
+        name : myOrder?.address?.name,
+        street : myOrder?.address?.street,
+        city : myOrder?.address?.city,
+        state : myOrder?.address?.state,
+        pincode : myOrder?.address?.zipCode,
+        phone : myOrder?.address?.phone,
+      },
+      timeline: [
+        { status: "Order Placed", date: "5 March 2024, 10:30 AM", completed: true },
+        { status: "Payment Confirmed", date: "5 March 2024, 11:15 AM", completed: true },
+        { status: "Processing", date: "6 March 2024, 9:00 AM", completed: true },
+        { status: "Shipped", date: "7 March 2024, 2:45 PM", completed: true },
+        { status: "Out for Delivery", date: "Expected 19 March 2024", completed: false },
+        { status: "Delivered", date: "Expected 19 March 2024", completed: false }
+      ]
+    };
   
     res.status(HttpStatusCodes.OK).json({ success: true, order });
   };

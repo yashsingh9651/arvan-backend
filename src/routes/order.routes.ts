@@ -11,7 +11,7 @@ router.post("/",authenticateJWT, orderController.createOrder);
 router.get("/",authenticateJWT, orderController.getAllOrders);
 
 // 📦 Get a single order by ID (Admin gets any order, User gets only their order)
-router.get("/:id", orderController.getOrderById);
+router.get("/:id",authenticateJWT, orderController.getOrderById);
 
 // 🔄 Update order status (Admin only)
 router.patch("/:id/status", orderController.updateOrderStatus);

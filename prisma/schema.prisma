@@ -15,7 +15,7 @@ model Product {
   discountPrice Float?
   material      String
   category_id   String
-    category      Category     @relation(fields: [category_id], references: [id])
+  category      Category     @relation(fields: [category_id], references: [id])
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   status        ProductStatus  @default(DRAFT)
@@ -24,6 +24,7 @@ model Product {
   ProductRating  ProductRating[]
   ProductPerformance ProductPerformance[]
   sales         SalesSummary[]
+  OrderItem     OrderItem[]
 }
 
 model ProductColor {
@@ -174,11 +175,13 @@ model Order {
   items       OrderItem[] // Join table for order items
   total       Float
   status      OrderStatus
+  awb         String?
+  DeliveryStatus String?       @default("PENDING")
+  etd         String?
   paid         Boolean         @default(false)
   fulfillment OrderFulfillment
   addressId   String
-  address     Address          @relation(fields: [addressId], references: [id])
-
+  address     Address          @relation(fields: [addressId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -195,6 +198,8 @@ model OrderItem {
   productImage     String
   productName      String
   size             String
+  productId        String
+  product          Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 enum OrderStatus {
   PENDING
