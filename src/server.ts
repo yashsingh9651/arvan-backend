@@ -35,7 +35,11 @@ if (ENV.NODE_ENV === NodeEnvs.Dev) {
   app.use(morgan('dev'));
 }
 
-// Security
+// WebHook
+import webhookRoutes from './routes/webhook.routes.js'
+
+app.use("/api/webhook", webhookRoutes);
+
 
 
 //CORS
@@ -93,6 +97,7 @@ app.use("/api/sales", getAllTimeMetricsRoutes);
 app.use("/api/productperformance", productPerformanceRouter);
 
 app.use("/api/shiprocket", authenticateJWT, shipRocketRoutes);
+
 
 // Add error handler
 

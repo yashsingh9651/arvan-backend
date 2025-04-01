@@ -106,6 +106,9 @@ const newArrivals = async (req: Request, res: Response, next: NextFunction) => {
       createdAt: "desc",
     },
     take: limit,
+    where: {
+      status: "PUBLISHED",
+    },
     include: {
       category: true,
       assets: {

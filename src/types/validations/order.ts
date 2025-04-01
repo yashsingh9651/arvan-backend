@@ -3,6 +3,7 @@ import { OrderFulfillment, OrderStatus } from "@prisma/client";
 
 
 export const OrderItemSchema = z.object({
+  productId: z.string().cuid(),
   productVariantId: z.string().cuid(),
   quantity: z.number().int().min(1),
   priceAtOrder: z.number().min(0),
